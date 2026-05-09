@@ -1,0 +1,6 @@
+# node generated files
+**/node_modules/
+**/dist/
+
+# mac generated files
+.DS_Store
