@@ -1,1 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Young+Serif&display=swap');
+
 @import 'tailwindcss';
+
+@theme {
+    /* https://www.tints.dev/palette/v1:bW9zc3wyRDVGM0Z8NTAwfHB8MHwwfDB8MTAwfG1-Y3JlYW18QkZCNDlCfDUwMHxwfDB8MHwwfDEwMHxt */
+    --color-moss-50: oklch(0.94 0.071 154.09);
+    --color-moss-100: oklch(0.87 0.15 153.79);
+    --color-moss-200: oklch(0.76 0.131 153.75);
+    --color-moss-300: oklch(0.659 0.113 153.63);
+    --color-moss-400: oklch(0.548 0.094 153.64);
+    --color-moss-500: oklch(0.441 0.076 153.83);
+    --color-moss-600: oklch(0.382 0.066 153.68);
+    --color-moss-700: oklch(0.32 0.054 154.05);
+    --color-moss-800: oklch(0.255 0.044 153.88);
+    --color-moss-900: oklch(0.194 0.033 155.25);
+    --color-moss-950: oklch(0.161 0.028 154.27);
+    --color-cream-50: oklch(0.974 0.007 80.68);
+    --color-cream-100: oklch(0.957 0.012 79.76);
+    --color-cream-200: oklch(0.906 0.031 86.44);
+    --color-cream-300: oklch(0.863 0.041 88.19);
+    --color-cream-400: oklch(0.82 0.039 86.88);
+    --color-cream-500: oklch(0.772 0.037 87.07);
+    --color-cream-600: oklch(0.646 0.031 86.64);
+    --color-cream-700: oklch(0.518 0.025 89.88);
+    --color-cream-800: oklch(0.388 0.019 86.45);
+    --color-cream-900: oklch(0.266 0.012 84.56);
+    --color-cream-950: oklch(0.197 0.008 84.57);
+
+    --font-sans: 'Figtree', sans-serif;
+    --font-display: 'Young Serif', serif;
+}
+
+@layer base {
+    body {
+        @apply text-taupe-700 font-sans font-normal text-sm;
+    }
+    h1 {
+        @apply text-2xl font-bold;
+    }
+    h2 {
+        @apply text-xl font-bold;
+    }
+    strong {
+        @apply font-semibold;
+    }
+}
