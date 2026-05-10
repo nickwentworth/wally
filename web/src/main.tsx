@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Button } from './components/Button';
+import { Icon } from './components/Icon';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -8,13 +9,23 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <nav className='bg-cream-100 border-cream-200 border-r w-60 flex flex-col gap-5 p-5'>
                 <h2 className='font-bold'>Wally</h2>
 
-                <Button variant='primary'>+ Add</Button>
+                <Button variant='primary' left='plus'>
+                    Add
+                </Button>
 
                 <div className='flex flex-col'>
-                    <a href='/transactions' className='p-2'>
+                    <a
+                        href='/transactions'
+                        className='flex items-center gap-2 p-2'
+                    >
+                        <Icon icon='receipt' size={18} />
                         <strong>Transactions</strong>
                     </a>
-                    <a href='/categories' className='p-2'>
+                    <a
+                        href='/categories'
+                        className='flex items-center gap-2 p-2'
+                    >
+                        <Icon icon='tag' size={18} />
                         Categories
                     </a>
                 </div>
@@ -28,7 +39,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <p className='text-xs text-taupe-500'>nick@test.com</p>
                     </div>
                     <a href='/settings' className='ml-auto'>
-                        (X)
+                        <Icon icon='settings' className='text-taupe-500' />
                     </a>
                 </div>
             </nav>
@@ -36,7 +47,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <div className='bg-cream-50 flex flex-col grow'>
                 <div className='border-cream-200 border-b flex items-center px-8 py-6'>
                     <h1 className='mr-auto'>Transactions</h1>
-                    <Button variant='primary'>+ Add</Button>
+                    <Button variant='primary' left='plus'>
+                        Add
+                    </Button>
                 </div>
                 <div className='px-8 py-6'>
                     <div className='border-cream-200 border rounded-lg flex flex-col items-center gap-4 py-16'>
@@ -47,7 +60,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                         <p className='text-taupe-500'>
                             Basically a spreadshet. A really good one though.
                         </p>
-                        <Button variant='primary'>+ Add Transaction</Button>
+                        <Button variant='primary' left='plus'>
+                            Add Transaction
+                        </Button>
                     </div>
                 </div>
             </div>
