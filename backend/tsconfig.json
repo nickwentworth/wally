@@ -6,7 +6,9 @@
         "esModuleInterop": true,
         "rootDir": "src",
         "outDir": "dist",
-        "strict": true
+        "strict": true,
+        // TODO: added to compile with drizzle-orm but don't love it, try to fix later
+        "skipLibCheck": true
     },
     "include": ["./src"]
 }

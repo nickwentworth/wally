@@ -4,3 +4,6 @@
 
 # mac generated files
 .DS_Store
+
+# config
+**/.env
