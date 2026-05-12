@@ -1,0 +1,11 @@
+{
+    "name": "wally",
+    "private": true,
+    "workspaces": [
+        "web",
+        "backend"
+    ],
+    "devDependencies": {
+        "typescript": "^6.0.3"
+    }
+}

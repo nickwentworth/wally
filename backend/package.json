@@ -9,13 +9,14 @@
     },
     "dependencies": {
         "@trpc/server": "^11.17.0",
+        "cors": "^2.8.6",
         "drizzle-orm": "^0.45.2",
         "express": "^5.2.1",
         "mysql2": "^3.22.3"
     },
     "devDependencies": {
+        "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",
-        "drizzle-kit": "^0.31.10",
-        "typescript": "^6.0.3"
+        "drizzle-kit": "^0.31.10"
     }
 }
