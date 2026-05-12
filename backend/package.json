@@ -8,6 +8,7 @@
         "gen": "drizzle-kit push"
     },
     "dependencies": {
+        "@trpc/server": "^11.17.0",
         "drizzle-orm": "^0.45.2",
         "express": "^5.2.1",
         "mysql2": "^3.22.3"
