@@ -17,12 +17,17 @@ const t = initTRPC.context<typeof createApiContext>().create();
 
 const apiRouter = t.router({
     me: t.procedure.query(async ({ ctx }) => {
-        const me = await ctx.db
-            .select()
-            .from(users)
-            .then((rs) => rs[0]);
+        // TODO: remove later, just added this to test user vs. none
+        const rand = Math.random();
 
-        return me;
+        if (rand > 0.5) {
+            return null;
+        } else {
+            return await ctx.db
+                .select()
+                .from(users)
+                .then((rs) => rs[0]);
+        }
     }),
 });
 
