@@ -3,39 +3,38 @@ import {
     CreateExpressContextOptions,
     createExpressMiddleware,
 } from '@trpc/server/adapters/express';
-import { MySql2Database } from 'drizzle-orm/mysql2';
 import { users } from '../db/schema.js';
+import { Services, SessionService } from '../services/index.js';
+import { parse } from 'cookie';
 
-function createApiContext(
-    db: MySql2Database,
+async function createApiContext(
     options: CreateExpressContextOptions,
+    services: Services,
 ) {
-    return { db };
+    const cookies = parse(options.req.headers.cookie ?? '');
+    const sessionToken = cookies[SessionService.SESSION_COOKIE];
+
+    let user: typeof users.$inferSelect | null = null;
+
+    const session = await services.session.validateSession(sessionToken);
+    if (session) {
+        user = await services.user.getById(session.userId);
+    }
+
+    return { services, user };
 }
 
 const t = initTRPC.context<typeof createApiContext>().create();
 
 const apiRouter = t.router({
-    me: t.procedure.query(async ({ ctx }) => {
-        // TODO: remove later, just added this to test user vs. none
-        const rand = Math.random();
-
-        if (rand > 0.5) {
-            return null;
-        } else {
-            return await ctx.db
-                .select()
-                .from(users)
-                .then((rs) => rs[0]);
-        }
-    }),
+    me: t.procedure.query(({ ctx }) => ctx.user),
 });
 
 export type ApiRouter = typeof apiRouter;
 
-export function buildApiHandler(db: MySql2Database) {
+export function buildApiHandler(services: Services) {
     return createExpressMiddleware({
         router: apiRouter,
-        createContext: (options) => createApiContext(db, options),
+        createContext: (options) => createApiContext(options, services),
     });
 }

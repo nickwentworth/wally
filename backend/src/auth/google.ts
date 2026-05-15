@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { randomBytes } from 'crypto';
 import { parse } from 'cookie';
 import z from 'zod';
+import { UserService, SessionService } from '../services/index.js';
 
 const googleUserProfileSchema = z.object({
     id: z.string(),
@@ -11,6 +12,8 @@ const googleUserProfileSchema = z.object({
     picture: z.string(),
 });
 
+export type GoogleUserProfile = z.infer<typeof googleUserProfileSchema>;
+
 const OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const USER_URL = 'https://www.googleapis.com/oauth2/v1/userinfo';
@@ -19,11 +22,21 @@ export class GoogleAuth {
     private client_id: string;
     private client_secret: string;
     private redirect_uri: URL;
+    private userService: UserService;
+    private sessionService: SessionService;
 
-    constructor(client_id: string, client_secret: string, redirect_uri: URL) {
+    constructor(
+        client_id: string,
+        client_secret: string,
+        redirect_uri: URL,
+        userService: UserService,
+        sessionService: SessionService,
+    ) {
         this.client_id = client_id;
         this.client_secret = client_secret;
         this.redirect_uri = redirect_uri;
+        this.userService = userService;
+        this.sessionService = sessionService;
     }
 
     public buildRouter() {
@@ -65,6 +78,10 @@ export class GoogleAuth {
         const accessToken = await this.fetchAccessToken(code);
         const userProfile = await this.fetchUserProfile(accessToken);
 
+        const user = await this.userService.getOrCreateFromGoogle(userProfile);
+        const sessionSecret = await this.sessionService.createSession(user.id);
+
+        res.cookie(SessionService.SESSION_COOKIE, sessionSecret);
         res.json(userProfile);
     }
 
