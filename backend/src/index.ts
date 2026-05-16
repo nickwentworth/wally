@@ -14,6 +14,8 @@ const server = express();
 server.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 const mysqlPool = mysql.createPool(process.env.MYSQL_URL!);
+mysqlPool.on('connection', (con) => con.query("SET time_zone = 'UTC'"));
+
 const db = drizzle(mysqlPool);
 
 const services = {
