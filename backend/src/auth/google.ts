@@ -58,6 +58,12 @@ export class GoogleAuth {
         const url = OAUTH_URL + '?' + params.toString();
 
         res.cookie('state', state, { maxAge: 5 * 60 * 1000 });
+
+        const redirect = req.query.redirect?.toString();
+        if (redirect) {
+            res.cookie('redirect', redirect, { maxAge: 5 * 60 * 1000 });
+        }
+
         res.redirect(url);
     }
 
@@ -82,7 +88,13 @@ export class GoogleAuth {
         const sessionSecret = await this.sessionService.createSession(user.id);
 
         res.cookie(SessionService.SESSION_COOKIE, sessionSecret);
-        res.json(userProfile);
+
+        const redirect = cookies['redirect'];
+        if (redirect) {
+            res.redirect(redirect);
+        } else {
+            res.json(userProfile);
+        }
     }
 
     private async fetchAccessToken(code: string) {
