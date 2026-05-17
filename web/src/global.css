@@ -51,10 +51,10 @@
     button {
         @apply cursor-pointer;
     }
-    input {
-        @apply focus:outline-0;
-    }
-    select {
+
+    input,
+    select,
+    textarea {
         @apply focus:outline-0;
     }
 }
