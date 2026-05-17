@@ -1,9 +1,17 @@
-import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet, useOutletContext } from 'react-router';
 import { NavBar } from './components/nav/NavBar';
 import { useQuery } from '@tanstack/react-query';
 import { trpc } from './lib/trpc';
+import { TransactionForm } from './components/TransactionForm';
+import { Modal, useModal } from './components/Modal';
+
+type ProtectedLayoutContext = {
+    onAddTransactionClick: () => void;
+};
 
 export function ProtectedLayout() {
+    const transactionFormControls = useModal();
+
     const userQuery = useQuery(trpc.me.queryOptions());
 
     if (userQuery.status === 'pending') {
@@ -16,12 +24,25 @@ export function ProtectedLayout() {
         return <Navigate to='/login' />;
     }
 
+    const outletContext = {
+        onAddTransactionClick: transactionFormControls.open,
+    } satisfies ProtectedLayoutContext;
+
     return (
         <div className='w-dvw h-dvh flex'>
-            <NavBar />
+            <NavBar onAddTransactionClick={transactionFormControls.open} />
+
             <div className='bg-cream-50 flex flex-col grow'>
-                <Outlet />
+                <Outlet context={outletContext} />
             </div>
+
+            <Modal controls={transactionFormControls}>
+                <TransactionForm onCloseClick={transactionFormControls.close} />
+            </Modal>
         </div>
     );
+}
+
+export function useProtectedLayoutContext() {
+    return useOutletContext<ProtectedLayoutContext>();
 }

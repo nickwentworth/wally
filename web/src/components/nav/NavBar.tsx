@@ -4,7 +4,11 @@ import { Button } from '../Button';
 import { Icon } from '../Icon';
 import { NavBarLink } from './NavBarLink';
 
-export function NavBar() {
+type NavBarProps = {
+    onAddTransactionClick: () => void;
+};
+
+export function NavBar(props: NavBarProps) {
     // TODO: refine logic and loading handling, just testing for now
     const userQuery = useQuery(trpc.me.queryOptions());
 
@@ -12,7 +16,11 @@ export function NavBar() {
         <nav className='bg-cream-100 border-cream-200 border-r w-60 flex flex-col gap-5 p-5'>
             <h2 className='font-bold'>Wally</h2>
 
-            <Button variant='primary' left='plus'>
+            <Button
+                variant='primary'
+                left='plus'
+                onClick={props.onAddTransactionClick}
+            >
                 Add
             </Button>
 

@@ -1,11 +1,18 @@
 import { Button } from '../components/Button';
+import { useProtectedLayoutContext } from '../ProtectedLayout';
 
 export function Transactions() {
+    const { onAddTransactionClick } = useProtectedLayoutContext();
+
     return (
         <div className='bg-cream-50 flex flex-col grow'>
             <div className='border-cream-200 border-b flex items-center px-8 py-6'>
                 <h1 className='mr-auto'>Transactions</h1>
-                <Button variant='primary' left='plus'>
+                <Button
+                    variant='primary'
+                    left='plus'
+                    onClick={onAddTransactionClick}
+                >
                     Add
                 </Button>
             </div>
@@ -19,7 +26,11 @@ export function Transactions() {
                     <p className='text-taupe-500'>
                         Basically a spreadshet. A really good one though.
                     </p>
-                    <Button variant='primary' left='plus'>
+                    <Button
+                        variant='primary'
+                        left='plus'
+                        onClick={onAddTransactionClick}
+                    >
                         Add Transaction
                     </Button>
                 </div>

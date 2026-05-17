@@ -5,10 +5,14 @@ import {
     Settings,
     Receipt,
     Tag,
+    X,
+    Check,
 } from 'lucide-react';
 
 const ICONS = {
     plus: Plus,
+    close: X,
+    check: Check,
     settings: Settings,
     receipt: Receipt,
     tag: Tag,
