@@ -10,7 +10,7 @@ export function TransactionForm(props: TransactionFormProps) {
         <div className='flex flex-col gap-4 p-6'>
             <div className='flex justify-between'>
                 <h2>Add Transaction</h2>
-                <Button variant='primary' onClick={props.onCloseClick}>
+                <Button variant='ghost' onClick={props.onCloseClick}>
                     <Icon icon='close' />
                 </Button>
             </div>
@@ -61,7 +61,7 @@ export function TransactionForm(props: TransactionFormProps) {
             </label>
 
             <div className='flex justify-end gap-2'>
-                <Button variant='primary' onClick={props.onCloseClick}>
+                <Button variant='ghost' onClick={props.onCloseClick}>
                     Cancel
                 </Button>
                 <Button variant='primary' left='check'>
