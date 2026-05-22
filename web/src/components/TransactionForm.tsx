@@ -1,6 +1,4 @@
-import { Button } from './Button';
-import { Icon } from './Icon';
-import { Text } from './Text';
+import { Button, Icon, Text } from './common';
 import z from 'zod';
 import { useForm } from 'react-hook-form';
 

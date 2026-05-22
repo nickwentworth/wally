@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react';
 import { Icon, IconType } from './Icon';
-import { buildClass } from '../lib/utils';
+import { buildClass } from '../../lib/utils';
 
 type ButtonProps = PropsWithChildren<{
     variant: 'primary' | 'ghost';

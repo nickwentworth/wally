@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { trpc } from '../../lib/trpc';
-import { Button } from '../Button';
-import { Icon } from '../Icon';
+import { Button, Icon } from '../common';
 import { NavBarLink } from './NavBarLink';
 
 type NavBarProps = {

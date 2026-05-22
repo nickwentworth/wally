@@ -3,7 +3,7 @@ import { NavBar } from './components/nav/NavBar';
 import { useQuery } from '@tanstack/react-query';
 import { trpc } from './lib/trpc';
 import { TransactionForm } from './components/TransactionForm';
-import { Modal, useModal } from './components/Modal';
+import { Modal, useModal } from './components/common';
 
 type ProtectedLayoutContext = {
     onAddTransactionClick: () => void;

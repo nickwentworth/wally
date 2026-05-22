@@ -1,4 +1,4 @@
-import { Button } from '../components/Button';
+import { Button } from '../components/common';
 import { buildLoginUrl } from '../lib/auth';
 
 export function Login() {

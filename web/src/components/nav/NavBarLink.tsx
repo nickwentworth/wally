@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router';
-import { Icon, IconType } from '../Icon';
+import { Icon, IconType } from '../common';
 
 type NavBarLinkProps = {
     href: string;
