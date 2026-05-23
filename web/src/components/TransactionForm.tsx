@@ -1,32 +1,31 @@
 import { Button, Icon, Text } from './common';
 import z from 'zod';
 import { useForm } from 'react-hook-form';
+import { useMutation } from '@tanstack/react-query';
+import { ApiRouterInputs, trpc } from '../lib/trpc';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
-const txnRecurSchema = z.object({
+const TxnFormRecur = z.object({
     rate: z.coerce.number(),
     period: z.enum(TXN_RECUR_PERIODS),
-    daysOfWeek: z.number().array().optional(),
-    daysOfMonth: z.number().array().optional(),
-    daysOfYear: z.number().array().optional(),
+    days: z.number().array().optional(),
     endsAt: z.preprocess(
         (val) => (val === '' ? undefined : val),
         z.coerce.date().optional(),
     ),
 });
 
-const txnFormSchema = z.object({
+const TxnFormData = z.object({
     isExpense: z.boolean(),
     amount: z.coerce.number(),
     categoryId: z.coerce.number(),
     date: z.coerce.date(),
     description: z.string().optional(),
     isRecurring: z.boolean(),
-    recurrence: txnRecurSchema.optional(),
+    recurrence: TxnFormRecur.optional(),
 });
-
-type TxnFormData = z.infer<typeof txnFormSchema>;
+type TxnFormData = z.infer<typeof TxnFormData>;
 
 type TransactionFormProps = {
     onCloseClick: () => void;
@@ -39,23 +38,60 @@ export function TransactionForm(props: TransactionFormProps) {
             date: new Date(), // FIXME: not currently working
             isRecurring: false,
             recurrence: {
-                // rate: 1,
+                rate: 1,
                 period: 'week',
+                days: [1, 2, 3],
             },
         },
     });
 
+    const txnCreator = useMutation(trpc.txn.create.mutationOptions());
+
     const isExpense = watch('isExpense');
     const isRecurring = watch('isRecurring');
 
-    const onSubmit = handleSubmit((data: any) => {
-        console.log(data);
-        const parsed = txnFormSchema.parse({
-            ...data,
-            recurrence: data.isRecurring ? data.recurrence : undefined,
+    const onSubmit = handleSubmit((raw: any) => {
+        const data = TxnFormData.parse({
+            ...raw,
+            recurrence: raw.isRecurring ? raw.recurrence : undefined,
         });
-        console.log(parsed);
-        // TODO: send to api
+
+        let recurrence: ApiRouterInputs['txn']['create']['recurrence'];
+        switch (data.recurrence?.period) {
+            case undefined:
+                recurrence = undefined;
+                break;
+            case 'day':
+                recurrence = { ...data.recurrence, period: 'daily' };
+                break;
+            case 'week':
+                recurrence = {
+                    ...data.recurrence,
+                    period: 'weekly',
+                    daysOfWeek: data.recurrence.days ?? [],
+                };
+                break;
+            case 'month':
+                recurrence = {
+                    ...data.recurrence,
+                    period: 'monthly',
+                    daysOfMonth: data.recurrence.days ?? [],
+                };
+                break;
+            case 'year':
+                recurrence = {
+                    ...data.recurrence,
+                    period: 'yearly',
+                    daysOfYear: data.recurrence.days ?? [],
+                };
+                break;
+        }
+
+        txnCreator.mutate({
+            ...data,
+            amount: data.isExpense ? -data.amount : data.amount,
+            recurrence,
+        });
     });
 
     return (

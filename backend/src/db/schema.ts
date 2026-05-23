@@ -2,6 +2,8 @@ import { sql } from 'drizzle-orm';
 import {
     bigint,
     binary,
+    date,
+    decimal,
     foreignKey,
     mysqlTable,
     serial,
@@ -31,5 +33,37 @@ export const sessions = mysqlTable(
             columns: [table.userId],
             foreignColumns: [users.id],
         }).onDelete('cascade'), // delete all sessions on user deletion
+    ],
+);
+
+export const transactions = mysqlTable(
+    'transactions',
+    {
+        id: serial('id').primaryKey(),
+        amount: decimal('amount', {
+            scale: 2,
+            precision: 8,
+            mode: 'number',
+        }).notNull(),
+        date: date('date').notNull(),
+        description: varchar('description', { length: 255 }),
+        recurrence: varchar('recurrence_data', { length: 1024 }),
+        recurrenceEndsAt: date('recurrence_ends_at'),
+        userId: bigint('user_id', { mode: 'number', unsigned: true }).notNull(),
+        // categoryId: bigint('category_id', {
+        //     mode: 'number',
+        //     unsigned: true,
+        // }).notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [users.id],
+        }).onDelete('cascade'),
+        // TODO: uncomment after categories are implemented
+        // foreignKey({
+        //     columns: [table.categoryId],
+        //     foreignColumns: [categories.id],
+        // }).onDelete('set null'),
     ],
 );

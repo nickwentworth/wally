@@ -2,11 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
-import { buildApiHandler } from './api/index.js';
+import { buildApiHandler } from './api/router.js';
 import { buildAuthRouter } from './auth/router.js';
 import { UserService } from './services/user.js';
 import { SessionService } from './services/session.js';
-import { Services } from './services/index.js';
+import { Services, TransactionService } from './services/index.js';
 
 const server = express();
 
@@ -21,6 +21,7 @@ const db = drizzle(mysqlPool);
 const services = {
     user: new UserService(db),
     session: new SessionService(db),
+    txn: new TransactionService(db),
 } satisfies Services;
 
 server.use('/api', buildApiHandler(services));

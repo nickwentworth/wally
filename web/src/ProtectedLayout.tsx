@@ -12,7 +12,7 @@ type ProtectedLayoutContext = {
 export function ProtectedLayout() {
     const transactionFormControls = useModal();
 
-    const userQuery = useQuery(trpc.me.queryOptions());
+    const userQuery = useQuery(trpc.user.me.queryOptions());
 
     if (userQuery.status === 'pending') {
         return <p>Loading...</p>;

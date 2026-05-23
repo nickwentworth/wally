@@ -9,7 +9,7 @@ type NavBarProps = {
 
 export function NavBar(props: NavBarProps) {
     // TODO: refine logic and loading handling, just testing for now
-    const userQuery = useQuery(trpc.me.queryOptions());
+    const userQuery = useQuery(trpc.user.me.queryOptions());
 
     return (
         <nav className='bg-cream-100 border-cream-200 border-r w-60 flex flex-col gap-5 p-5'>
