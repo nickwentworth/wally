@@ -6,6 +6,7 @@ import { ApiRouterInputs, trpc } from '../lib/trpc';
 import { TxnFormWeekdays } from './inputs/TxnFormWeekdays';
 import { TxnFormMonthDays } from './inputs/TxnFormMonthDays';
 import { TxnFormYearDays } from './inputs/TxnFormYearDays';
+import { Toggle } from './common/Toggle';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
@@ -163,15 +164,16 @@ export function TransactionForm(props: TransactionFormProps) {
 
             <label className='flex flex-col gap-2'>
                 <Text variant='uppercase'>Recurring</Text>
-                <div>
-                    <input
-                        type='checkbox'
-                        checked={isRecurring}
-                        onChange={(e) =>
-                            setValue('isRecurring', e.target.checked)
-                        }
+                <div className='flex items-center gap-2'>
+                    <Toggle
+                        isToggled={isRecurring}
+                        onToggle={(b) => setValue('isRecurring', b)}
                     />
-                    Off
+                    {isRecurring ? (
+                        <b>TODO</b>
+                    ) : (
+                        <span className='text-taupe-400'>Off</span>
+                    )}
                 </div>
             </label>
 
@@ -189,10 +191,7 @@ export function TransactionForm(props: TransactionFormProps) {
                             />
                             <select
                                 className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold grow'
-                                {...register('recurrence.period', {
-                                    // onChange: () =>
-                                    //     setValue('recurrence.days', []),
-                                })}
+                                {...register('recurrence.period')}
                             >
                                 {TXN_RECUR_PERIODS.map((period) => (
                                     <option value={period} key={period}>
