@@ -30,3 +30,7 @@ export function ordinalSuffix(n: number) {
             return 'th';
     }
 }
+
+export function sameItems<T>(a: T[], b: T[]) {
+    return a.length === b.length && a.every((item) => b.includes(item));
+}

@@ -7,6 +7,7 @@ import { TxnFormWeekdays } from './inputs/TxnFormWeekdays';
 import { TxnFormMonthDays } from './inputs/TxnFormMonthDays';
 import { TxnFormYearDays } from './inputs/TxnFormYearDays';
 import { Toggle } from './common/Toggle';
+import { formatRecurrenceName } from '../lib/recurrence';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
@@ -21,6 +22,7 @@ const TxnFormRecur = z.object({
         z.coerce.date().optional(),
     ),
 });
+export type TxnFormRecur = z.infer<typeof TxnFormRecur>;
 
 const TxnFormData = z.object({
     isExpense: z.boolean(),
@@ -56,9 +58,10 @@ export function TransactionForm(props: TransactionFormProps) {
 
     const txnCreator = useMutation(trpc.txn.create.mutationOptions());
 
-    const [isExpense, isRecurring, recurPeriod] = watch([
+    const [isExpense, isRecurring, recurrence, recurPeriod] = watch([
         'isExpense',
         'isRecurring',
+        'recurrence',
         'recurrence.period',
     ]);
 
@@ -169,8 +172,8 @@ export function TransactionForm(props: TransactionFormProps) {
                         isToggled={isRecurring}
                         onToggle={(b) => setValue('isRecurring', b)}
                     />
-                    {isRecurring ? (
-                        <b>TODO</b>
+                    {isRecurring && recurrence ? (
+                        <b>{formatRecurrenceName(recurrence)}</b>
                     ) : (
                         <span className='text-taupe-400'>Off</span>
                     )}

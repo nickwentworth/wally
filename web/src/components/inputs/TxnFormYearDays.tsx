@@ -2,55 +2,11 @@ import { useController, UseControllerProps } from 'react-hook-form';
 import { TxnFormData } from '../TransactionForm';
 import { useState } from 'react';
 import { Button, Icon, Text } from '../common';
-import { ordinalSuffix } from '../../lib/utils';
-
-const MONTHS = [
-    { month: 'January', days: 31 },
-    { month: 'February', days: 29 },
-    { month: 'March', days: 31 },
-    { month: 'April', days: 30 },
-    { month: 'May', days: 31 },
-    { month: 'June', days: 30 },
-    { month: 'July', days: 31 },
-    { month: 'August', days: 31 },
-    { month: 'September', days: 30 },
-    { month: 'October', days: 31 },
-    { month: 'November', days: 30 },
-    { month: 'December', days: 31 },
-] as const;
-
-type Month = (typeof MONTHS)[number]['month'];
-
-function getDayOfYear(month: Month, dayOfMonth: number) {
-    let days = 0;
-
-    for (const m of MONTHS) {
-        if (m.month === month) {
-            return days + dayOfMonth;
-        } else {
-            days += m.days;
-        }
-    }
-
-    throw new Error('Unreachable');
-}
-
-function getFormattedMonthAndDay(dayOfYear: number) {
-    let monthIdx = 0;
-    let dayOfMonth = dayOfYear;
-
-    for (const m of MONTHS) {
-        if (dayOfMonth <= m.days) {
-            break;
-        } else {
-            monthIdx += 1;
-            dayOfMonth -= m.days;
-        }
-    }
-
-    const month = MONTHS[monthIdx].month;
-    return `${month} ${dayOfMonth}${ordinalSuffix(dayOfMonth)}`;
-}
+import {
+    getDayOfYear,
+    getFormattedMonthAndDay,
+    MONTHS,
+} from '../../lib/recurrence';
 
 export function TxnFormYearDays(
     props: UseControllerProps<TxnFormData, 'recurrence.daysOfYear'>,
