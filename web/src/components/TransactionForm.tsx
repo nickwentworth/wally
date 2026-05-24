@@ -3,13 +3,18 @@ import z from 'zod';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { ApiRouterInputs, trpc } from '../lib/trpc';
+import { TxnFormWeekdays } from './inputs/TxnFormWeekdays';
+import { TxnFormMonthDays } from './inputs/TxnFormMonthDays';
+import { TxnFormYearDays } from './inputs/TxnFormYearDays';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
 const TxnFormRecur = z.object({
     rate: z.coerce.number(),
     period: z.enum(TXN_RECUR_PERIODS),
-    days: z.number().array().optional(),
+    daysOfWeek: z.number().array(),
+    daysOfMonth: z.number().array(),
+    daysOfYear: z.number().array(),
     endsAt: z.preprocess(
         (val) => (val === '' ? undefined : val),
         z.coerce.date().optional(),
@@ -25,30 +30,36 @@ const TxnFormData = z.object({
     isRecurring: z.boolean(),
     recurrence: TxnFormRecur.optional(),
 });
-type TxnFormData = z.infer<typeof TxnFormData>;
+export type TxnFormData = z.infer<typeof TxnFormData>;
 
 type TransactionFormProps = {
     onCloseClick: () => void;
 };
 
 export function TransactionForm(props: TransactionFormProps) {
-    const { register, watch, setValue, handleSubmit } = useForm<TxnFormData>({
-        defaultValues: {
-            isExpense: true,
-            date: new Date(), // FIXME: not currently working
-            isRecurring: false,
-            recurrence: {
-                rate: 1,
-                period: 'week',
-                days: [1, 2, 3],
+    const { register, watch, control, setValue, handleSubmit } =
+        useForm<TxnFormData>({
+            defaultValues: {
+                isExpense: true,
+                date: new Date(), // FIXME: not currently working
+                isRecurring: false,
+                recurrence: {
+                    rate: 1,
+                    period: 'week',
+                    daysOfWeek: [],
+                    daysOfMonth: [],
+                    daysOfYear: [],
+                },
             },
-        },
-    });
+        });
 
     const txnCreator = useMutation(trpc.txn.create.mutationOptions());
 
-    const isExpense = watch('isExpense');
-    const isRecurring = watch('isRecurring');
+    const [isExpense, isRecurring, recurPeriod] = watch([
+        'isExpense',
+        'isRecurring',
+        'recurrence.period',
+    ]);
 
     const onSubmit = handleSubmit((raw: any) => {
         const data = TxnFormData.parse({
@@ -68,21 +79,21 @@ export function TransactionForm(props: TransactionFormProps) {
                 recurrence = {
                     ...data.recurrence,
                     period: 'weekly',
-                    daysOfWeek: data.recurrence.days ?? [],
+                    daysOfWeek: data.recurrence.daysOfWeek ?? [],
                 };
                 break;
             case 'month':
                 recurrence = {
                     ...data.recurrence,
                     period: 'monthly',
-                    daysOfMonth: data.recurrence.days ?? [],
+                    daysOfMonth: data.recurrence.daysOfMonth ?? [],
                 };
                 break;
             case 'year':
                 recurrence = {
                     ...data.recurrence,
                     period: 'yearly',
-                    daysOfYear: data.recurrence.days ?? [],
+                    daysOfYear: data.recurrence.daysOfYear ?? [],
                 };
                 break;
         }
@@ -178,7 +189,10 @@ export function TransactionForm(props: TransactionFormProps) {
                             />
                             <select
                                 className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold grow'
-                                {...register('recurrence.period')}
+                                {...register('recurrence.period', {
+                                    // onChange: () =>
+                                    //     setValue('recurrence.days', []),
+                                })}
                             >
                                 {TXN_RECUR_PERIODS.map((period) => (
                                     <option value={period} key={period}>
@@ -189,17 +203,29 @@ export function TransactionForm(props: TransactionFormProps) {
                         </div>
                     </label>
 
-                    <label className='flex flex-col gap-2'>
-                        <Text variant='uppercase'>Repeat on</Text>
-                        <div className='flex gap-2'>
-                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-                                // TODO: days of week/month/year, depending on recurrence.period
-                                <button className='bg-cream-50 border-cream-400 border w-9 h-9 rounded-full font-semibold'>
-                                    {day}
-                                </button>
-                            ))}
+                    {recurPeriod !== 'day' && (
+                        <div className='flex flex-col gap-2'>
+                            <Text variant='uppercase'>Repeat on</Text>
+                            {recurPeriod === 'week' && (
+                                <TxnFormWeekdays
+                                    control={control}
+                                    name='recurrence.daysOfWeek'
+                                />
+                            )}
+                            {recurPeriod === 'month' && (
+                                <TxnFormMonthDays
+                                    control={control}
+                                    name='recurrence.daysOfMonth'
+                                />
+                            )}
+                            {recurPeriod === 'year' && (
+                                <TxnFormYearDays
+                                    control={control}
+                                    name='recurrence.daysOfYear'
+                                />
+                            )}
                         </div>
-                    </label>
+                    )}
 
                     <label className='flex flex-col gap-2'>
                         <Text variant='uppercase'>Ends on (optional)</Text>

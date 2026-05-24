@@ -12,3 +12,21 @@ export function buildClass(...values: ClassValue[]) {
         .filter((str) => !!str)
         .join(' ');
 }
+
+export function ordinalSuffix(n: number) {
+    if ([11, 12, 13].includes(n)) {
+        return 'th';
+    }
+
+    const lastDigit = n % 10;
+    switch (lastDigit) {
+        case 1:
+            return 'st';
+        case 2:
+            return 'nd';
+        case 3:
+            return 'rd';
+        default:
+            return 'th';
+    }
+}
