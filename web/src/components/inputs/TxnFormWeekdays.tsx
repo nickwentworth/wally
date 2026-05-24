@@ -1,8 +1,7 @@
 import { useController, UseControllerProps } from 'react-hook-form';
 import { TxnFormData } from '../TransactionForm';
 import { buildClass } from '../../lib/utils';
-
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+import { WEEKDAYS } from '../../lib/recurrence';
 
 export function TxnFormWeekdays(
     props: UseControllerProps<TxnFormData, 'recurrence.daysOfWeek'>,
@@ -38,7 +37,7 @@ export function TxnFormWeekdays(
                     type='button'
                     key={dayIdx}
                 >
-                    {day}
+                    {day.charAt(0)}
                 </button>
             ))}
         </div>
