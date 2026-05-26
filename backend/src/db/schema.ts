@@ -36,6 +36,24 @@ export const sessions = mysqlTable(
     ],
 );
 
+export const categories = mysqlTable(
+    'categories',
+    {
+        id: serial('id').primaryKey(),
+        name: varchar('name', { length: 255 }).notNull(),
+        fgColor: varchar('fg_color', { length: 7 }).notNull(),
+        bgColor: varchar('bg_color', { length: 7 }).notNull(),
+        icon: varchar('icon', { length: 255 }).notNull(),
+        userId: bigint('user_id', { mode: 'number', unsigned: true }).notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [users.id],
+        }).onDelete('cascade'),
+    ],
+);
+
 export const transactions = mysqlTable(
     'transactions',
     {

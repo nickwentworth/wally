@@ -7,9 +7,26 @@ import {
     Tag,
     X,
     Check,
+    Briefcase,
+    Car,
+    Gift,
+    House,
+    ShoppingCart,
+    Utensils,
 } from 'lucide-react';
+import { CategoryIcon } from '../../lib/trpc';
+
+const CATEGORY_ICONS = {
+    briefcase: Briefcase,
+    car: Car,
+    gift: Gift,
+    house: House,
+    shoppping: ShoppingCart,
+    utensils: Utensils,
+} satisfies Record<CategoryIcon, LucideIcon>;
 
 const ICONS = {
+    ...CATEGORY_ICONS,
     plus: Plus,
     close: X,
     check: Check,

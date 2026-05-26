@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Category } from './CategoryTable';
 import { CategoryRowForm } from './CategoryRowForm';
 import { CategoryIcon } from './CategoryIcon';
 import { Icon } from '../common';
+import { Category } from '../../lib/trpc';
 
 type CategoryRowProps = {
     category?: Category;

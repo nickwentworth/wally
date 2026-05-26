@@ -1,6 +1,6 @@
+import { Category } from '../../lib/trpc';
 import { buildClass } from '../../lib/utils';
 import { Icon } from '../common';
-import { Category } from './CategoryTable';
 
 type CategoryIconProps = {
     category?: Category;

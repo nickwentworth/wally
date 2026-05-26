@@ -1,27 +1,19 @@
-import { useState } from 'react';
 import { Button, Icon, Text } from '../common';
 import { CategoryIcon } from './CategoryIcon';
-import { Category } from './CategoryTable';
 import { buildClass } from '../../lib/utils';
-import { IconType } from '../common/Icon';
+import { Category, trpc } from '../../lib/trpc';
+import { CATEGORY_ICONS } from 'backend/src/services/category';
+import { useForm } from 'react-hook-form';
+import z from 'zod';
+import { CATEGORY_COLORS, getCategoryColorIdx } from '../../lib/categories';
+import { useMutation } from '@tanstack/react-query';
 
-export const CATEGORY_COLORS = [
-    { bg: '#FBD4D9', fg: '#8A1F31' },
-    { bg: '#FCD7C4', fg: '#8A3513' },
-    { bg: '#FAE3B8', fg: '#7A4E0B' },
-    { bg: '#F7EBB0', fg: '#6B5400' },
-    { bg: '#DEEDB6', fg: '#3E5A09' },
-    { bg: '#C8E4CE', fg: '#1E5A32' },
-    { bg: '#BDE6D7', fg: '#0F5A3F' },
-    { bg: '#B9E1E2', fg: '#0B4D57' },
-    { bg: '#C5DEEE', fg: '#0F4B70' },
-    { bg: '#C9D7F1', fg: '#1E3B80' },
-    { bg: '#D4CFF0', fg: '#30268A' },
-    { bg: '#E0CDEE', fg: '#4A1D82' },
-    { bg: '#EDCFE4', fg: '#6E1569' },
-    { bg: '#ECD1DB', fg: '#6B1A41' },
-    { bg: '#DDD7C8', fg: '#4F4628' },
-];
+const CategoryFormData = z.object({
+    name: z.string(),
+    colorIdx: z.coerce.number(),
+    icon: z.enum(CATEGORY_ICONS),
+});
+type CategoryFormData = z.infer<typeof CategoryFormData>;
 
 type CategoryFormProps = {
     category?: Category;
@@ -30,20 +22,41 @@ type CategoryFormProps = {
 };
 
 export function CategoryRowForm(props: CategoryFormProps) {
-    const [colorIdx, setColorIdx] = useState(() => {
-        const idx = CATEGORY_COLORS.findIndex(
-            (c) => c.bg === props.category?.bgColor,
-        );
-        return idx !== -1 ? idx : 0;
-    });
+    const { register, watch, setValue, handleSubmit } =
+        useForm<CategoryFormData>({
+            defaultValues: {
+                name: props.category?.name,
+                icon: props.category?.icon,
+                colorIdx: props.category
+                    ? getCategoryColorIdx(props.category)
+                    : undefined,
+            },
+        });
+
+    const categorySave = useMutation(trpc.category.save.mutationOptions());
+
+    const colorIdx = watch('colorIdx');
+    const icon = watch('icon');
+
     const activeColor = CATEGORY_COLORS[colorIdx];
 
-    const [icon, setIcon] = useState<IconType>('tag');
+    const onSubmit = handleSubmit((raw: any) => {
+        const data = CategoryFormData.parse(raw);
+        console.log(data);
+
+        categorySave.mutate({
+            name: data.name,
+            bgColor: activeColor.bg,
+            fgColor: activeColor.fg,
+            icon: data.icon,
+            id: props.category?.id,
+        });
+    });
 
     return (
         <tr>
-            <td colSpan={3} className='bg-cream-50 border-cream-200 border-t'>
-                <div className='flex flex-col gap-4 p-4'>
+            <td colSpan={999} className='bg-cream-50 border-cream-200 border-t'>
+                <form className='flex flex-col gap-4 p-4' onSubmit={onSubmit}>
                     <div className='flex items-center gap-4'>
                         <CategoryIcon />
                         <div className='flex flex-col gap-1'>
@@ -52,6 +65,7 @@ export function CategoryRowForm(props: CategoryFormProps) {
                                 className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold'
                                 type='text'
                                 placeholder='Category name'
+                                {...register('name', { required: true })}
                             />
                         </div>
                     </div>
@@ -75,7 +89,9 @@ export function CategoryRowForm(props: CategoryFormProps) {
                                                     ? c.fg
                                                     : undefined,
                                             }}
-                                            onClick={() => setColorIdx(idx)}
+                                            onClick={() =>
+                                                setValue('colorIdx', idx)
+                                            }
                                         >
                                             {isActive && (
                                                 <Icon icon='check' size={18} />
@@ -89,34 +105,32 @@ export function CategoryRowForm(props: CategoryFormProps) {
                         <div className='flex flex-col gap-2'>
                             <Text variant='uppercase'>Icon</Text>
                             <div className='flex flex-wrap gap-2'>
-                                {(['plus', 'receipt', 'tag'] as const).map(
-                                    (i) => {
-                                        const isActive = i === icon;
-                                        return (
-                                            <button
-                                                className={buildClass(
-                                                    'w-9 h-9 rounded-lg flex items-center justify-center',
-                                                    [isActive, 'outline'],
-                                                    [!isActive, 'bg-white'],
-                                                )}
-                                                style={
-                                                    isActive
-                                                        ? {
-                                                              backgroundColor:
-                                                                  activeColor.bg,
-                                                              color: activeColor.fg,
-                                                              outlineColor:
-                                                                  activeColor.fg,
-                                                          }
-                                                        : undefined
-                                                }
-                                                onClick={() => setIcon(i)}
-                                            >
-                                                <Icon icon={i} size={18} />
-                                            </button>
-                                        );
-                                    },
-                                )}
+                                {CATEGORY_ICONS.map((i) => {
+                                    const isActive = i === icon;
+                                    return (
+                                        <button
+                                            className={buildClass(
+                                                'w-9 h-9 rounded-lg flex items-center justify-center',
+                                                [isActive, 'outline'],
+                                                [!isActive, 'bg-white'],
+                                            )}
+                                            style={
+                                                isActive
+                                                    ? {
+                                                          backgroundColor:
+                                                              activeColor.bg,
+                                                          color: activeColor.fg,
+                                                          outlineColor:
+                                                              activeColor.fg,
+                                                      }
+                                                    : undefined
+                                            }
+                                            onClick={() => setValue('icon', i)}
+                                        >
+                                            <Icon icon={i} size={18} />
+                                        </button>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
@@ -133,7 +147,7 @@ export function CategoryRowForm(props: CategoryFormProps) {
                             Save
                         </Button>
                     </div>
-                </div>
+                </form>
             </td>
         </tr>
     );

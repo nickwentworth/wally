@@ -4,9 +4,11 @@ import { Services } from '../services/index.js';
 import { txnRouter } from './routers/transaction.js';
 import { userRouter } from './routers/user.js';
 import { createApiContext, router } from './trpc.js';
+import { categoryRouter } from './routers/category.js';
 
 const apiRouter = router({
     user: userRouter,
+    category: categoryRouter,
     txn: txnRouter,
 });
 

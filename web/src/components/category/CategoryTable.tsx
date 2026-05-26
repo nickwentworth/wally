@@ -1,26 +1,15 @@
-import { IconType, Text } from '../common';
+import { useQuery } from '@tanstack/react-query';
+import { Text } from '../common';
 import { CategoryRow } from './CategoryRow';
-
-// TODO: pull type and categories from DB
-export type Category = {
-    id: number;
-    name: string;
-    textColor: string;
-    bgColor: string;
-    icon: IconType;
-};
-
-const CATEGORIES_TMP = [
-    {
-        id: 1,
-        name: 'Salary',
-        textColor: '#1e5a32',
-        bgColor: '#c8e4ce',
-        icon: 'receipt',
-    },
-] satisfies Category[];
+import { trpc } from '../../lib/trpc';
 
 export function CategoryTable() {
+    const { data: categories } = useQuery(trpc.category.all.queryOptions());
+
+    if (categories === undefined) {
+        return <p>Loading...</p>;
+    }
+
     return (
         <table className='rounded-lg border-cream-200 border overflow-hidden'>
             <thead>
@@ -35,7 +24,7 @@ export function CategoryTable() {
                 </tr>
             </thead>
             <tbody>
-                {CATEGORIES_TMP.map((category) => (
+                {categories.map((category) => (
                     <CategoryRow category={category} key={category.id} />
                 ))}
                 <CategoryRow />

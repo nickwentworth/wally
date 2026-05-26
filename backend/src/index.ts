@@ -6,7 +6,11 @@ import { buildApiHandler } from './api/router.js';
 import { buildAuthRouter } from './auth/router.js';
 import { UserService } from './services/user.js';
 import { SessionService } from './services/session.js';
-import { Services, TransactionService } from './services/index.js';
+import {
+    CategoryService,
+    Services,
+    TransactionService,
+} from './services/index.js';
 
 const server = express();
 
@@ -22,6 +26,7 @@ const services = {
     user: new UserService(db),
     session: new SessionService(db),
     txn: new TransactionService(db),
+    category: new CategoryService(db),
 } satisfies Services;
 
 server.use('/api', buildApiHandler(services));
