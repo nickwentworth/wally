@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CategoryRowForm } from './CategoryRowForm';
+import { CategoryForm } from './CategoryForm';
 import { CategoryIcon } from './CategoryIcon';
 import { Icon } from '../common';
 import { Category } from '../../lib/trpc';
@@ -13,11 +13,18 @@ export function CategoryRow(props: CategoryRowProps) {
 
     if (isExpanded) {
         return (
-            <CategoryRowForm
-                category={props.category}
-                onCancelClick={() => setIsExpanded(false)}
-                onSubmitClick={() => setIsExpanded(false)}
-            />
+            <tr>
+                <td
+                    colSpan={999}
+                    className='bg-cream-50 border-cream-200 border-t'
+                >
+                    <CategoryForm
+                        category={props.category}
+                        onCancel={() => setIsExpanded(false)}
+                        onSubmit={() => setIsExpanded(false)}
+                    />
+                </td>
+            </tr>
         );
     }
 

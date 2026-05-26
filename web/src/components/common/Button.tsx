@@ -6,6 +6,7 @@ type ButtonProps = PropsWithChildren<{
     variant: 'primary' | 'ghost';
     left?: IconType;
     onClick?: () => void;
+    type?: 'button' | 'submit';
 }>;
 
 export function Button(props: ButtonProps) {
@@ -23,7 +24,11 @@ export function Button(props: ButtonProps) {
     );
 
     return (
-        <button className={className} onClick={props.onClick}>
+        <button
+            className={className}
+            onClick={props.onClick}
+            type={props.type ?? 'button'}
+        >
             {props.left && <Icon icon={props.left} />}
             {props.children}
         </button>

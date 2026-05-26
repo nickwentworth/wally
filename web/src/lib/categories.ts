@@ -1,4 +1,11 @@
+import z from 'zod';
 import { Category } from './trpc';
+
+export const CategoryFormColor = z.object({
+    bg: z.string(),
+    fg: z.string(),
+});
+export type CategoryFormColor = z.infer<typeof CategoryFormColor>;
 
 export const CATEGORY_COLORS = [
     { bg: '#FBD4D9', fg: '#8A1F31' },
@@ -16,13 +23,11 @@ export const CATEGORY_COLORS = [
     { bg: '#EDCFE4', fg: '#6E1569' },
     { bg: '#ECD1DB', fg: '#6B1A41' },
     { bg: '#DDD7C8', fg: '#4F4628' },
-] as const;
+] satisfies CategoryFormColor[];
 
-export function getCategoryColorIdx(category: Category) {
-    const idx = CATEGORY_COLORS.findIndex(
+export function tryGetCategoryColor(category?: Category) {
+    return CATEGORY_COLORS.find(
         (color) =>
-            color.bg === category.bgColor && color.fg === category.fgColor,
+            color.bg === category?.bgColor && color.fg === category?.fgColor,
     );
-
-    return Math.max(idx, 0);
 }
