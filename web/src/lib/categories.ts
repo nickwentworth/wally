@@ -1,5 +1,35 @@
-import { Category } from './trpc';
+import { ApiRouterOutputs, trpc } from './trpc';
 import { CategoryFormColor } from '../components/category/CategoryForm';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+// -------------------- Hooks -------------------- //
+
+export function useCategories() {
+    return useQuery(trpc.category.all.queryOptions());
+}
+
+type UseCategorySaveOpts = {
+    onSuccess?: () => void;
+};
+
+export function useCategorySave(opts: UseCategorySaveOpts) {
+    const qc = useQueryClient();
+    return useMutation(
+        trpc.category.save.mutationOptions({
+            onSuccess: () => {
+                qc.invalidateQueries({
+                    queryKey: trpc.category.all.queryKey(),
+                });
+                opts.onSuccess?.();
+            },
+        }),
+    );
+}
+
+// -------------------- Types / Constants -------------------- //
+
+export type Category = ApiRouterOutputs['category']['all'][number];
+export type CategoryIcon = Category['icon'];
 
 export const CATEGORY_COLORS = [
     { bg: '#FBD4D9', fg: '#8A1F31' },

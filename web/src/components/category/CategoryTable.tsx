@@ -1,10 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
 import { Text } from '../common';
 import { CategoryRow } from './CategoryRow';
-import { trpc } from '../../lib/trpc';
+import { useCategories } from '../../lib/categories';
 
 export function CategoryTable() {
-    const { data: categories } = useQuery(trpc.category.all.queryOptions());
+    const { data: categories } = useCategories();
 
     if (categories === undefined) {
         return <p>Loading...</p>;

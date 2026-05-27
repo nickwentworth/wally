@@ -1,4 +1,4 @@
-import { Category, CategoryIcon } from '../../lib/trpc';
+import { Category, CategoryIcon } from '../../lib/categories';
 import { buildClass } from '../../lib/utils';
 import { Icon, IconType } from '../common';
 

@@ -14,7 +14,7 @@ import {
     ShoppingCart,
     Utensils,
 } from 'lucide-react';
-import { CategoryIcon } from '../../lib/trpc';
+import { CategoryIcon } from '../../lib/categories';
 
 const CATEGORY_ICONS = {
     briefcase: Briefcase,

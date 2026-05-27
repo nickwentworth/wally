@@ -1,4 +1,4 @@
-import type { ApiRouter, ApiRouterOutputs } from 'backend/src/api/router';
+import type { ApiRouter } from 'backend/src/api/router';
 import { QueryClient } from '@tanstack/react-query';
 import { createTRPCClient, httpLink } from '@trpc/client';
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query';
@@ -21,6 +21,3 @@ export const trpc = createTRPCOptionsProxy<ApiRouter>({
 });
 
 export type { ApiRouterInputs, ApiRouterOutputs } from 'backend/src/api/router';
-
-export type Category = ApiRouterOutputs['category']['all'][number];
-export type CategoryIcon = Category['icon'];

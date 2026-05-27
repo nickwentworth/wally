@@ -1,11 +1,14 @@
 import { Button, Text } from '../common';
 import { CategoryBadge } from './CategoryBadge';
-import { Category, trpc } from '../../lib/trpc';
 import { CATEGORY_ICONS } from 'backend/src/services/category';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
-import { CATEGORY_COLORS, tryGetCategoryColor } from '../../lib/categories';
-import { useMutation } from '@tanstack/react-query';
+import {
+    Category,
+    CATEGORY_COLORS,
+    tryGetCategoryColor,
+    useCategorySave,
+} from '../../lib/categories';
 
 const CategoryFormColor = z.object({
     bg: z.string(),
@@ -37,7 +40,9 @@ export function CategoryForm(props: CategoryFormProps) {
             },
         });
 
-    const categorySave = useMutation(trpc.category.save.mutationOptions());
+    const categorySave = useCategorySave({
+        onSuccess: props.onSubmit,
+    });
 
     const color = watch('color');
     const icon = watch('icon');

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { CategoryForm } from './CategoryForm';
 import { CategoryBadge } from './CategoryBadge';
 import { Icon } from '../common';
-import { Category } from '../../lib/trpc';
+import { Category } from '../../lib/categories';
 
 type CategoryRowProps = {
     category?: Category;
