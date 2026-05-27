@@ -1,11 +1,5 @@
-import z from 'zod';
 import { Category } from './trpc';
-
-export const CategoryFormColor = z.object({
-    bg: z.string(),
-    fg: z.string(),
-});
-export type CategoryFormColor = z.infer<typeof CategoryFormColor>;
+import { CategoryFormColor } from '../components/category/CategoryForm';
 
 export const CATEGORY_COLORS = [
     { bg: '#FBD4D9', fg: '#8A1F31' },

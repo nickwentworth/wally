@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CategoryForm } from './CategoryForm';
-import { CategoryIcon } from './CategoryIcon';
+import { CategoryBadge } from './CategoryBadge';
 import { Icon } from '../common';
 import { Category } from '../../lib/trpc';
 
@@ -36,15 +36,27 @@ export function CategoryRow(props: CategoryRowProps) {
             <td className='border-cream-200 border-t pl-4 pr-2 py-3 w-0'>
                 {props.category && <input type='checkbox' />}
             </td>
+
             <td className='border-cream-200 border-t px-2 py-3 w-0'>
                 {props.category && <Icon icon='plus' />}
             </td>
+
             <td className='border-cream-200 border-t px-2 py-3 flex items-center gap-2'>
-                <CategoryIcon category={props.category} />
                 {props.category ? (
-                    <span className='font-medium'>{props.category.name}</span>
+                    <>
+                        <CategoryBadge
+                            variant='category'
+                            category={props.category}
+                        />
+                        <span className='font-medium'>
+                            {props.category.name}
+                        </span>
+                    </>
                 ) : (
-                    <span className='text-taupe-400'>Add Category</span>
+                    <>
+                        <CategoryBadge variant='empty' />
+                        <span className='text-taupe-400'>Add Category</span>
+                    </>
                 )}
             </td>
         </tr>
