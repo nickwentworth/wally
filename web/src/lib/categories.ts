@@ -26,6 +26,24 @@ export function useCategorySave(opts: UseCategorySaveOpts) {
     );
 }
 
+type UseCategoryDeleteOpts = {
+    onSuccess?: () => void;
+};
+
+export function useCategoryDelete(opts: UseCategoryDeleteOpts) {
+    const qc = useQueryClient();
+    return useMutation(
+        trpc.category.delete.mutationOptions({
+            onSuccess: () => {
+                qc.invalidateQueries({
+                    queryKey: trpc.category.all.queryKey(),
+                });
+                opts.onSuccess?.();
+            },
+        }),
+    );
+}
+
 // -------------------- Types / Constants -------------------- //
 
 export type Category = ApiRouterOutputs['category']['all'][number];

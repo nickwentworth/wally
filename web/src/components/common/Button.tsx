@@ -7,6 +7,7 @@ type ButtonProps = PropsWithChildren<{
     left?: IconType;
     onClick?: () => void;
     type?: 'button' | 'submit';
+    className?: string;
 }>;
 
 export function Button(props: ButtonProps) {
@@ -21,6 +22,7 @@ export function Button(props: ButtonProps) {
         ],
         'font-medium text-[13px] rounded-lg',
         'flex items-center justify-center gap-2 px-4 py-2',
+        props.className ?? '',
     );
 
     return (

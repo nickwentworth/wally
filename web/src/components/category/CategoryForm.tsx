@@ -7,6 +7,7 @@ import {
     Category,
     CATEGORY_COLORS,
     tryGetCategoryColor,
+    useCategoryDelete,
     useCategorySave,
 } from '../../lib/categories';
 
@@ -40,9 +41,8 @@ export function CategoryForm(props: CategoryFormProps) {
             },
         });
 
-    const categorySave = useCategorySave({
-        onSuccess: props.onSubmit,
-    });
+    const saveCategory = useCategorySave({ onSuccess: props.onSubmit });
+    const deleteCategory = useCategoryDelete({ onSuccess: props.onCancel });
 
     const color = watch('color');
     const icon = watch('icon');
@@ -51,7 +51,7 @@ export function CategoryForm(props: CategoryFormProps) {
         const data = CategoryFormData.parse(raw);
         console.log(data);
 
-        categorySave.mutate({
+        saveCategory.mutate({
             name: data.name,
             bgColor: data.color.bg,
             fgColor: data.color.fg,
@@ -59,6 +59,8 @@ export function CategoryForm(props: CategoryFormProps) {
             id: props.category?.id,
         });
     });
+
+    const categoryId = props.category?.id;
 
     const activeAwareColors = CATEGORY_COLORS.map(
         (c) => [c, c.fg === color.fg && c.bg === color.bg] as const,
@@ -126,8 +128,23 @@ export function CategoryForm(props: CategoryFormProps) {
                 </div>
             </div>
 
-            <div className='flex justify-end gap-2'>
-                <Button variant='ghost' onClick={props.onCancel}>
+            <div className='flex gap-2'>
+                {categoryId && (
+                    <Button
+                        variant='ghost'
+                        left='trash'
+                        onClick={() =>
+                            deleteCategory.mutate({ id: categoryId })
+                        }
+                    >
+                        Delete
+                    </Button>
+                )}
+                <Button
+                    variant='ghost'
+                    onClick={props.onCancel}
+                    className='ml-auto'
+                >
                     Cancel
                 </Button>
                 <Button variant='primary' left='check' type='submit'>

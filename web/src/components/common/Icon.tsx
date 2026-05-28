@@ -13,6 +13,7 @@ import {
     House,
     ShoppingCart,
     Utensils,
+    Trash2,
 } from 'lucide-react';
 import { CategoryIcon } from '../../lib/categories';
 
@@ -29,6 +30,7 @@ const ICONS = {
     ...CATEGORY_ICONS,
     plus: Plus,
     close: X,
+    trash: Trash2,
     check: Check,
     settings: Settings,
     receipt: Receipt,

@@ -1,7 +1,7 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import z from 'zod';
 import { categories } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 // -------------------- Schemas/Types -------------------- //
 
@@ -24,6 +24,10 @@ export const CategorySave = z.object({
     icon: z.enum(CATEGORY_ICONS),
 });
 type CategorySave = z.infer<typeof CategorySave>;
+
+export const CategoryDelete = z.object({
+    id: z.number(),
+});
 
 type CategorySelectRaw = typeof categories.$inferSelect;
 
@@ -58,6 +62,12 @@ export class CategoryService {
         } else {
             await this.db.insert(categories).values(data);
         }
+    }
+
+    async deleteCategory(id: number, userId: number) {
+        await this.db
+            .delete(categories)
+            .where(and(eq(categories.id, id), eq(categories.userId, userId)));
     }
 
     private narrowCategorySelect(raw: CategorySelectRaw) {
