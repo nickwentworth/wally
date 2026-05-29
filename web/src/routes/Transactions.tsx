@@ -1,4 +1,5 @@
 import { Button } from '../components/common';
+import { TxnPage } from '../components/transaction/TxnPage';
 import { useProtectedLayoutContext } from '../ProtectedLayout';
 
 export function Transactions() {
@@ -18,22 +19,7 @@ export function Transactions() {
             </div>
 
             <div className='px-8 py-6'>
-                <div className='border-cream-200 border rounded-lg flex flex-col items-center gap-4 py-16'>
-                    <p>(Receipt Image)</p>
-                    <h2 className='font-display text-4xl text-taupe-900'>
-                        Welcome to Wally!
-                    </h2>
-                    <p className='text-taupe-500'>
-                        Basically a spreadshet. A really good one though.
-                    </p>
-                    <Button
-                        variant='primary'
-                        left='plus'
-                        onClick={onAddTransactionClick}
-                    >
-                        Add Transaction
-                    </Button>
-                </div>
+                <TxnPage onAddTransactionClick={onAddTransactionClick} />
             </div>
         </div>
     );
