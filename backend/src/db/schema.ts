@@ -68,20 +68,16 @@ export const transactions = mysqlTable(
         recurrence: varchar('recurrence_data', { length: 1024 }),
         recurrenceEndsAt: date('recurrence_ends_at'),
         userId: bigint('user_id', { mode: 'number', unsigned: true }).notNull(),
-        // categoryId: bigint('category_id', {
-        //     mode: 'number',
-        //     unsigned: true,
-        // }).notNull(),
+        categoryId: bigint('category_id', { mode: 'number', unsigned: true }),
     },
     (table) => [
         foreignKey({
             columns: [table.userId],
             foreignColumns: [users.id],
         }).onDelete('cascade'),
-        // TODO: uncomment after categories are implemented
-        // foreignKey({
-        //     columns: [table.categoryId],
-        //     foreignColumns: [categories.id],
-        // }).onDelete('set null'),
+        foreignKey({
+            columns: [table.categoryId],
+            foreignColumns: [categories.id],
+        }).onDelete('set null'),
     ],
 );

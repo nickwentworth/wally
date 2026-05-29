@@ -1,13 +1,14 @@
 import { Button, Icon, Text } from './common';
 import z from 'zod';
 import { useForm } from 'react-hook-form';
-import { useMutation } from '@tanstack/react-query';
-import { ApiRouterInputs, trpc } from '../lib/trpc';
+import { ApiRouterInputs } from '../lib/trpc';
 import { TxnFormWeekdays } from './inputs/TxnFormWeekdays';
 import { TxnFormMonthDays } from './inputs/TxnFormMonthDays';
 import { TxnFormYearDays } from './inputs/TxnFormYearDays';
 import { Toggle } from './common/Toggle';
 import { formatRecurrenceName } from '../lib/recurrence';
+import { useTransactionCreate } from '../lib/transactions';
+import { CategorySelect } from './inputs/CategorySelect';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
@@ -27,7 +28,7 @@ export type TxnFormRecur = z.infer<typeof TxnFormRecur>;
 const TxnFormData = z.object({
     isExpense: z.boolean(),
     amount: z.coerce.number(),
-    categoryId: z.coerce.number(),
+    categoryId: z.coerce.number().optional(),
     date: z.coerce.date(),
     description: z.string().optional(),
     isRecurring: z.boolean(),
@@ -37,6 +38,7 @@ export type TxnFormData = z.infer<typeof TxnFormData>;
 
 type TransactionFormProps = {
     onCloseClick: () => void;
+    onSubmit: () => void;
 };
 
 export function TransactionForm(props: TransactionFormProps) {
@@ -56,14 +58,13 @@ export function TransactionForm(props: TransactionFormProps) {
             },
         });
 
-    const txnCreator = useMutation(trpc.txn.create.mutationOptions());
+    const createTxn = useTransactionCreate({ onSuccess: props.onSubmit });
 
-    const [isExpense, isRecurring, recurrence, recurPeriod] = watch([
-        'isExpense',
-        'isRecurring',
-        'recurrence',
-        'recurrence.period',
-    ]);
+    const isExpense = watch('isExpense');
+    const categoryId = watch('categoryId');
+    const isRecurring = watch('isRecurring');
+    const recurrence = watch('recurrence');
+    const recurPeriod = watch('recurrence.period');
 
     const onSubmit = handleSubmit((raw: any) => {
         const data = TxnFormData.parse({
@@ -102,7 +103,7 @@ export function TransactionForm(props: TransactionFormProps) {
                 break;
         }
 
-        txnCreator.mutate({
+        createTxn.mutate({
             ...data,
             amount: data.isExpense ? -data.amount : data.amount,
             recurrence,
@@ -137,12 +138,10 @@ export function TransactionForm(props: TransactionFormProps) {
             <div className='grid grid-cols-2 gap-4'>
                 <label className='flex flex-col gap-2'>
                     <Text variant='uppercase'>Category</Text>
-                    <select
-                        className='border-cream-400 border rounded-lg p-2 font-semibold'
-                        {...register('categoryId', { required: true })}
-                    >
-                        <option value={1}>Salary</option>
-                    </select>
+                    <CategorySelect
+                        selectedId={categoryId}
+                        onSelect={(c) => setValue('categoryId', c.id)}
+                    />
                 </label>
 
                 <label className='flex flex-col gap-2'>
@@ -244,7 +243,7 @@ export function TransactionForm(props: TransactionFormProps) {
                 <Button variant='ghost' onClick={props.onCloseClick}>
                     Cancel
                 </Button>
-                <Button variant='primary' left='check'>
+                <Button variant='primary' left='check' type='submit'>
                     Save
                 </Button>
             </div>

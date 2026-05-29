@@ -43,6 +43,7 @@ type TxnGet = z.infer<typeof TxnGet>;
 
 export const TxnCreate = z.object({
     amount: z.number(),
+    categoryId: z.int().optional(),
     date: z.coerce.date(),
     description: z.string().optional(),
     recurrence: TxnRecurrence.optional(),

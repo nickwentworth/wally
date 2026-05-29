@@ -14,6 +14,8 @@ import {
     ShoppingCart,
     Utensils,
     Trash2,
+    ChevronDown,
+    Search,
 } from 'lucide-react';
 import { CategoryIcon } from '../../lib/categories';
 
@@ -32,6 +34,8 @@ const ICONS = {
     close: X,
     trash: Trash2,
     check: Check,
+    chevron: ChevronDown,
+    search: Search,
     settings: Settings,
     receipt: Receipt,
     tag: Tag,
