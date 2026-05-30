@@ -5,10 +5,11 @@ import { ApiRouterInputs } from '../lib/trpc';
 import { TxnFormWeekdays } from './inputs/TxnFormWeekdays';
 import { TxnFormMonthDays } from './inputs/TxnFormMonthDays';
 import { TxnFormYearDays } from './inputs/TxnFormYearDays';
-import { Toggle } from './common/Toggle';
+import { Toggle } from './inputs/Toggle';
 import { formatRecurrenceName } from '../lib/recurrence';
 import { useTransactionCreate } from '../lib/transactions';
 import { CategorySelect } from './inputs/CategorySelect';
+import { Input } from './inputs/Input';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
@@ -119,9 +120,9 @@ export function TransactionForm(props: TransactionFormProps) {
                 </Button>
             </div>
 
-            <div className='border-cream-400 border text-3xl font-mono font-medium rounded-lg overflow-hidden flex'>
+            <div className='bg-white border-cream-200 border text-3xl font-mono font-medium rounded-lg overflow-hidden flex'>
                 <button
-                    className='w-12 bg-cream-200 border-cream-400 border-r shrink-0'
+                    className='w-12 bg-cream-100 border-cream-200 border-r shrink-0'
                     onClick={() => setValue('isExpense', !isExpense)}
                 >
                     {isExpense ? <>&ndash;</> : '+'}
@@ -146,8 +147,7 @@ export function TransactionForm(props: TransactionFormProps) {
 
                 <label className='flex flex-col gap-2'>
                     <Text variant='uppercase'>Date</Text>
-                    <input
-                        className='border-cream-400 border rounded-lg p-2 font-semibold'
+                    <Input
                         type='date'
                         {...register('date', { required: true })}
                     />
@@ -156,12 +156,12 @@ export function TransactionForm(props: TransactionFormProps) {
 
             <label className='flex flex-col gap-2'>
                 <Text variant='uppercase'>Description (optional)</Text>
-                <textarea
-                    className='border-cream-400 border rounded-lg p-2 resize-y'
+                <Input
+                    variant='textarea'
                     placeholder='Add a note...'
                     rows={3}
                     {...register('description')}
-                ></textarea>
+                />
             </label>
 
             <label className='flex flex-col gap-2'>
@@ -180,19 +180,20 @@ export function TransactionForm(props: TransactionFormProps) {
             </label>
 
             {isRecurring && (
-                <div className='bg-cream-200 border-cream-400 border rounded-lg flex flex-col gap-4 p-4'>
+                <div className='bg-cream-100 border-cream-200 border rounded-lg flex flex-col gap-4 p-4'>
                     <label className='flex flex-col gap-2'>
                         <Text variant='uppercase'>Repeat Every</Text>
                         <div className='flex gap-2'>
-                            <input
-                                className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold w-16'
+                            <Input
+                                className='w-16'
                                 type='number'
                                 {...register('recurrence.rate', {
                                     required: true,
                                 })}
                             />
+
                             <select
-                                className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold grow'
+                                className='bg-white border-cream-200 border rounded-lg h-10 p-2 grow'
                                 {...register('recurrence.period')}
                             >
                                 {TXN_RECUR_PERIODS.map((period) => (
@@ -230,11 +231,7 @@ export function TransactionForm(props: TransactionFormProps) {
 
                     <label className='flex flex-col gap-2'>
                         <Text variant='uppercase'>Ends on (optional)</Text>
-                        <input
-                            className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold'
-                            type='date'
-                            {...register('recurrence.endsAt')}
-                        />
+                        <Input type='date' {...register('recurrence.endsAt')} />
                     </label>
                 </div>
             )}

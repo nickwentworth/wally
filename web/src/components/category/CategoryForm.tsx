@@ -10,6 +10,7 @@ import {
     useCategoryDelete,
     useCategorySave,
 } from '../../lib/categories';
+import { Input } from '../inputs/Input';
 
 const CategoryFormColor = z.object({
     bg: z.string(),
@@ -82,8 +83,7 @@ export function CategoryForm(props: CategoryFormProps) {
 
                 <div className='flex flex-col gap-1'>
                     <Text variant='uppercase'>Name</Text>
-                    <input
-                        className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold'
+                    <Input
                         type='text'
                         placeholder='Category name'
                         {...register('name', { required: true })}

@@ -4,6 +4,7 @@ import {
     useTransactions,
 } from '../../lib/transactions';
 import { Text } from '../common';
+import { Input } from '../inputs/Input';
 import { TxnTotalCard } from './TxnTotalCard';
 
 export function TxnTable() {
@@ -22,8 +23,8 @@ export function TxnTable() {
                     <option>This year</option>
                 </select>
 
-                <input
-                    className='bg-white border-cream-400 border rounded-lg p-2 font-semibold grow'
+                <Input
+                    className='grow'
                     type='text'
                     placeholder='Search Transactions'
                 />

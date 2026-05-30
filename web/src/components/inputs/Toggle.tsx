@@ -16,6 +16,7 @@ export function Toggle(props: ToggleProps) {
         <button
             className={containerClass}
             onClick={() => props.onToggle(!props.isToggled)}
+            type='button'
         >
             <div className='bg-white h-5 w-5 rounded-full shadow'></div>
         </button>

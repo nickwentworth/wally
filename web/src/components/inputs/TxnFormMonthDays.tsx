@@ -3,6 +3,7 @@ import { TxnFormData } from '../TransactionForm';
 import { useState } from 'react';
 import { ordinalSuffix } from '../../lib/utils';
 import { Button, Icon, Text } from '../common';
+import { Input } from './Input';
 
 export function TxnFormMonthDays(
     props: UseControllerProps<TxnFormData, 'recurrence.daysOfMonth'>,
@@ -37,7 +38,7 @@ export function TxnFormMonthDays(
                     On the{' '}
                     {value.map((day) => (
                         <button
-                            className='bg-cream-400 hover:bg-cream-500 inline-flex items-center gap-1 px-1 py-0.5 rounded-sm mr-1'
+                            className='bg-cream-200 hover:bg-cream-300 inline-flex items-center gap-1 px-1 py-0.5 rounded-sm mr-1'
                             onClick={() => onRemoveBtnClick(day)}
                             type='button'
                             key={day}
@@ -55,9 +56,9 @@ export function TxnFormMonthDays(
                 <div className='flex items-baseline gap-2'>
                     <Text variant='uppercase'>Add:</Text>
                     <span>On day</span>
-                    <input
+                    <Input
                         type='number'
-                        className='w-14 bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold'
+                        className='w-14'
                         value={dayInput}
                         onChange={(e) =>
                             setDayInput(Number.parseInt(e.target.value))
@@ -66,6 +67,7 @@ export function TxnFormMonthDays(
                         max={31}
                     />
                 </div>
+
                 <Button variant='primary' onClick={onAddBtnClick}>
                     <Icon icon='plus' />
                 </Button>

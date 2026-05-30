@@ -60,7 +60,7 @@ export function CategorySelect(props: CategorySelectProps) {
     return (
         <div className='relative' ref={containerRef}>
             <button
-                className='w-full bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
+                className='w-full h-10 bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
                 onClick={() => open()}
                 type='button'
             >
@@ -103,7 +103,7 @@ export function CategorySelect(props: CategorySelectProps) {
                     {filteredCategories.map((category) => (
                         <button
                             className={buildClass(
-                                'hover:bg-cream-100 rounded flex items-center gap-2 p-2',
+                                'hover:bg-cream-100 rounded flex items-center gap-2 p-1',
                                 [category == selected, 'bg-cream-50'],
                             )}
                             onClick={() => {

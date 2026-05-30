@@ -16,7 +16,7 @@ export function TxnFormWeekdays(
     const buildBtnClass = (idx: number) =>
         buildClass(
             [value.includes(idx), 'bg-moss-500 border-moss-500 text-white'],
-            [!value.includes(idx), 'bg-cream-50 border-cream-400'],
+            [!value.includes(idx), 'bg-white border-cream-200'],
             'border w-9 h-9 rounded-full font-semibold',
         );
 

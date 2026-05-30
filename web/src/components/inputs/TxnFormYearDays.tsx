@@ -7,6 +7,7 @@ import {
     getFormattedMonthAndDay,
     MONTHS,
 } from '../../lib/recurrence';
+import { Input } from './Input';
 
 export function TxnFormYearDays(
     props: UseControllerProps<TxnFormData, 'recurrence.daysOfYear'>,
@@ -50,7 +51,7 @@ export function TxnFormYearDays(
                 <div className='flex gap-1 flex-wrap'>
                     {value.map((dayOfYear) => (
                         <button
-                            className='bg-cream-400 hover:bg-cream-500 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm mr-1'
+                            className='bg-cream-200 hover:bg-cream-300 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm mr-1'
                             onClick={() => onRemoveBtnClick(dayOfYear)}
                             type='button'
                             key={dayOfYear}
@@ -68,7 +69,7 @@ export function TxnFormYearDays(
                     <span>On</span>
 
                     <select
-                        className='bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold'
+                        className='bg-white border-cream-200 border rounded-lg p-2'
                         value={monthInput}
                         onChange={(e) =>
                             setMonthInput(Number.parseInt(e.target.value))
@@ -79,9 +80,9 @@ export function TxnFormYearDays(
                         ))}
                     </select>
 
-                    <input
+                    <Input
                         type='number'
-                        className='w-14 bg-cream-50 border-cream-400 border rounded-lg p-2 font-semibold'
+                        className='w-14'
                         value={dayInput}
                         onChange={(e) =>
                             setDayInput(Number.parseInt(e.target.value))
