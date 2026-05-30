@@ -19,8 +19,6 @@ type CategoryBadgeProps = CategoryBadgePropsBase & {
 };
 
 export function CategoryBadge(props: CategoryBadgeProps) {
-    console.log(props);
-
     const containerClass = buildClass(
         'rounded-lg flex items-center justify-center',
         [!props.size || props.size === 'md', 'h-7 w-7'],

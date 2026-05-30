@@ -19,27 +19,18 @@ export function CategorySelect(props: CategorySelectProps) {
     const inputRef = useRef<HTMLInputElement>(null);
 
     function open() {
-        if (isOpen) {
-            return;
-        }
-
         setIsOpen(true);
         inputRef.current?.focus();
     }
 
     function close() {
-        if (!isOpen) {
-            return;
-        }
-
         setIsOpen(false);
         setSearch('');
     }
 
     useEffect(() => {
-        const handleClick = (e: MouseEvent) => {
+        const handleClose = (e: MouseEvent) => {
             if (
-                isOpen &&
                 containerRef.current &&
                 !containerRef.current.contains(e.target as Node)
             ) {
@@ -47,9 +38,11 @@ export function CategorySelect(props: CategorySelectProps) {
             }
         };
 
-        document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
-    }, []);
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClose);
+            return () => document.removeEventListener('mousedown', handleClose);
+        }
+    }, [isOpen]);
 
     if (categories === undefined) {
         return <p>Loading...</p>;
