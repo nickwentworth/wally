@@ -10,6 +10,7 @@ import { formatRecurrenceName } from '../lib/recurrence';
 import { useTransactionCreate } from '../lib/transactions';
 import { CategorySelect } from './inputs/CategorySelect';
 import { Input } from './inputs/Input';
+import { todayDateInputStr } from '../lib/utils';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
@@ -21,7 +22,7 @@ const TxnFormRecur = z.object({
     daysOfYear: z.number().array(),
     endsAt: z.preprocess(
         (val) => (val === '' ? undefined : val),
-        z.coerce.date().optional(),
+        z.string().optional(),
     ),
 });
 export type TxnFormRecur = z.infer<typeof TxnFormRecur>;
@@ -30,7 +31,7 @@ const TxnFormData = z.object({
     isExpense: z.boolean(),
     amount: z.coerce.number(),
     categoryId: z.coerce.number().optional(),
-    date: z.coerce.date(),
+    date: z.string(),
     description: z.string().optional(),
     isRecurring: z.boolean(),
     recurrence: TxnFormRecur.optional(),
@@ -47,7 +48,7 @@ export function TransactionForm(props: TransactionFormProps) {
         useForm<TxnFormData>({
             defaultValues: {
                 isExpense: true,
-                date: new Date(), // FIXME: not currently working
+                date: todayDateInputStr(),
                 isRecurring: false,
                 recurrence: {
                     rate: 1,
@@ -124,6 +125,7 @@ export function TransactionForm(props: TransactionFormProps) {
                 <button
                     className='w-12 bg-cream-100 border-cream-200 border-r shrink-0'
                     onClick={() => setValue('isExpense', !isExpense)}
+                    type='button'
                 >
                     {isExpense ? <>&ndash;</> : '+'}
                 </button>

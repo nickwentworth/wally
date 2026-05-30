@@ -13,6 +13,11 @@ export function buildClass(...values: ClassValue[]) {
         .join(' ');
 }
 
+export function todayDateInputStr() {
+    const now = new Date();
+    return now.toLocaleDateString('en-CA');
+}
+
 export function ordinalSuffix(n: number) {
     if ([11, 12, 13].includes(n)) {
         return 'th';
