@@ -3,12 +3,16 @@ import {
     formatDollar,
     useTransactions,
 } from '../../lib/transactions';
+import { todayDateInputStr } from '../../lib/utils';
 import { Text } from '../common';
 import { Input } from '../inputs/Input';
 import { TxnTotalCard } from './TxnTotalCard';
 
 export function TxnTable() {
-    const { data: txns } = useTransactions();
+    const { data: txns } = useTransactions({
+        start: '2026-05-01',
+        end: todayDateInputStr(),
+    });
 
     if (txns === undefined) {
         return <p>Loading...</p>;
@@ -58,7 +62,10 @@ export function TxnTable() {
                     {txns.map((txn) => (
                         <tr className='bg-white' key={txn.id}>
                             <td className='h-10 w-30 border-cream-200 border-r border-t'>
-                                <p className='px-3'>{txn.date.split('T')[0]}</p>
+                                <p className='px-3'>
+                                    {/* TODO: fix backend so this is definitely not null */}
+                                    {txn.date?.split('T')[0]}
+                                </p>
                             </td>
                             <td className='h-10 w-40 border-cream-200 border-r border-t'>
                                 <p className='px-3'>&ndash;</p>

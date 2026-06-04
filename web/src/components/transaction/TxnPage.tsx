@@ -12,13 +12,14 @@ type TxnPageProps = {
 export function TxnPage(props: TxnPageProps) {
     const [tab, setTab] = useState<TxnPageTab>('transactions');
 
-    const { data: txns } = useTransactions();
+    // const { data: txns } = useTransactions();
 
-    if (txns === undefined) {
-        return <p>Loading...</p>;
-    }
+    // if (txns === undefined) {
+    //     return <p>Loading...</p>;
+    // }
 
-    if (txns.length === 0) {
+    // if (txns.length === 0) {
+    if (false) {
         return (
             <div className='border-cream-200 border rounded-lg flex flex-col items-center gap-4 py-16'>
                 <p>(Receipt Image)</p>

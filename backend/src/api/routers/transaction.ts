@@ -3,7 +3,7 @@ import { TxnCreate, TxnGet } from '../../services/transaction.js';
 
 export const txnRouter = router({
     get: protectedProcedure.input(TxnGet).query(async ({ ctx, input }) => {
-        return await ctx.services.txn.getTransactions({}, ctx.user.id);
+        return await ctx.services.txn.getTransactions(input, ctx.user.id);
     }),
 
     create: protectedProcedure

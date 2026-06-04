@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiRouterOutputs, trpc } from './trpc';
+import { ApiRouterInputs, ApiRouterOutputs, trpc } from './trpc';
 
 // -------------------- Hooks -------------------- //
 
-export function useTransactions() {
-    return useQuery(trpc.txn.get.queryOptions({}));
+export function useTransactions(opts: TxnGetOpts) {
+    return useQuery(trpc.txn.get.queryOptions(opts));
 }
 
 type UseTxnCreateOpts = {
@@ -26,6 +26,8 @@ export function useTransactionCreate(opts: UseTxnCreateOpts) {
 }
 
 // -------------------- Types / Constants -------------------- //
+
+type TxnGetOpts = ApiRouterInputs['txn']['get'];
 
 type Transaction = ApiRouterOutputs['txn']['get'][number];
 
