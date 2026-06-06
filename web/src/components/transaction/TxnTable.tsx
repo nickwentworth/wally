@@ -1,18 +1,32 @@
+import { useState } from 'react';
 import {
     calculateTotals,
     formatDollar,
+    getTxnFilterRange,
+    TxnFilterRange,
     useTransactions,
 } from '../../lib/transactions';
-import { todayDateInputStr } from '../../lib/utils';
 import { Text } from '../common';
 import { Input } from '../inputs/Input';
+import { TxnRangePicker } from '../inputs/TxnRangePicker';
 import { TxnTotalCard } from './TxnTotalCard';
 
+type TxnTableFilter = {
+    range: TxnFilterRange;
+    categoryIds: number[];
+    search: string;
+};
+
 export function TxnTable() {
-    const { data: txns } = useTransactions({
-        start: '2026-05-01',
-        end: todayDateInputStr(),
+    const [filters, setFilters] = useState<TxnTableFilter>({
+        range: 'year',
+        categoryIds: [],
+        search: '',
     });
+
+    const { start, end } = getTxnFilterRange(filters.range);
+
+    const { data: txns } = useTransactions({ start, end });
 
     if (txns === undefined) {
         return <p>Loading...</p>;
@@ -23,9 +37,10 @@ export function TxnTable() {
     return (
         <div className='flex flex-col gap-4'>
             <div className='flex gap-4'>
-                <select className='bg-white border-cream-400 border rounded-lg p-2 font-semibold w-40'>
-                    <option>This year</option>
-                </select>
+                <TxnRangePicker
+                    value={filters.range}
+                    onChange={(range) => setFilters({ ...filters, range })}
+                />
 
                 <Input
                     className='grow'
@@ -60,7 +75,7 @@ export function TxnTable() {
 
                 <tbody>
                     {txns.map((txn) => (
-                        <tr className='bg-white' key={txn.id}>
+                        <tr className='bg-white' key={`${txn.id}_${txn.date}`}>
                             <td className='h-10 w-30 border-cream-200 border-r border-t'>
                                 <p className='px-3'>
                                     {/* TODO: fix backend so this is definitely not null */}

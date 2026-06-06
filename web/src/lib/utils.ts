@@ -18,6 +18,31 @@ export function todayDateInputStr() {
     return now.toLocaleDateString('en-CA');
 }
 
+export function startOfWeekInputStr() {
+    const now = new Date();
+    const weekday = now.getDay(); // ranges from 1 = Monday to 7 = Sunday
+
+    if (weekday !== 7) {
+        // Only go back if we're not on Sunday already
+        now.setHours(weekday * -24);
+    }
+
+    return now.toLocaleDateString('en-CA');
+}
+
+export function startOfMonthInputStr() {
+    const now = new Date();
+    now.setDate(1);
+    return now.toLocaleDateString('en-CA');
+}
+
+export function startOfYearInputStr() {
+    const now = new Date();
+    now.setDate(1);
+    now.setMonth(0);
+    return now.toLocaleDateString('en-CA');
+}
+
 export function ordinalSuffix(n: number) {
     if ([11, 12, 13].includes(n)) {
         return 'th';

@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiRouterInputs, ApiRouterOutputs, trpc } from './trpc';
+import {
+    startOfMonthInputStr,
+    startOfWeekInputStr,
+    startOfYearInputStr,
+    todayDateInputStr,
+} from './utils';
 
 // -------------------- Hooks -------------------- //
 
@@ -31,6 +37,22 @@ type TxnGetOpts = ApiRouterInputs['txn']['get'];
 
 type Transaction = ApiRouterOutputs['txn']['get'][number];
 
+export const TXN_FILTER_RANGE_PRESETS = [
+    'today',
+    'week',
+    'month',
+    'year',
+    'all',
+] as const;
+export type TxnFilterRangePreset = (typeof TXN_FILTER_RANGE_PRESETS)[number];
+
+export type TxnFilterRange =
+    | TxnFilterRangePreset
+    | {
+          from: string;
+          to: string;
+      };
+
 // -------------------- Helpers -------------------- //
 
 export function calculateTotals(txns: Transaction[]) {
@@ -50,6 +72,38 @@ export function calculateTotals(txns: Transaction[]) {
         expense,
         net: income + expense,
     } as const;
+}
+
+export function getTxnFilterRange(r: TxnFilterRange) {
+    let start: string;
+    let end: string;
+
+    if (typeof r === 'string') {
+        switch (r) {
+            case 'today':
+                start = todayDateInputStr();
+                break;
+            case 'week':
+                start = startOfWeekInputStr();
+                break;
+            case 'month':
+                start = startOfMonthInputStr();
+                break;
+            case 'year':
+                start = startOfYearInputStr();
+                break;
+            case 'all':
+                start = new Date(0).toLocaleDateString('en-CA');
+                break;
+        }
+
+        end = todayDateInputStr();
+    } else {
+        start = r.from;
+        end = r.to;
+    }
+
+    return { start, end };
 }
 
 export function formatDollar(amount: number) {
