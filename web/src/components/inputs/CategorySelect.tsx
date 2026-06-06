@@ -3,6 +3,7 @@ import { Category, useCategories } from '../../lib/categories';
 import { CategoryBadge } from '../category/CategoryBadge';
 import { Icon } from '../common';
 import { buildClass } from '../../lib/utils';
+import { useDropdown } from '../../lib/hooks/useDropdown';
 
 type CategorySelectProps = {
     selectedId?: number;
@@ -12,37 +13,14 @@ type CategorySelectProps = {
 export function CategorySelect(props: CategorySelectProps) {
     const { data: categories } = useCategories();
 
-    const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState('');
 
-    const containerRef = useRef<HTMLDivElement>(null);
+    const dropdown = useDropdown({
+        onOpen: () => inputRef.current?.focus(),
+        onClose: () => setSearch(''),
+    });
+
     const inputRef = useRef<HTMLInputElement>(null);
-
-    function open() {
-        setIsOpen(true);
-        inputRef.current?.focus();
-    }
-
-    function close() {
-        setIsOpen(false);
-        setSearch('');
-    }
-
-    useEffect(() => {
-        const handleClose = (e: MouseEvent) => {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(e.target as Node)
-            ) {
-                close();
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClose);
-            return () => document.removeEventListener('mousedown', handleClose);
-        }
-    }, [isOpen]);
 
     if (categories === undefined) {
         return <p>Loading...</p>;
@@ -58,10 +36,10 @@ export function CategorySelect(props: CategorySelectProps) {
     );
 
     return (
-        <div className='relative' ref={containerRef}>
+        <div className='relative' ref={dropdown.containerRef}>
             <button
                 className='w-full h-10 bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
-                onClick={() => open()}
+                onClick={() => dropdown.open()}
                 type='button'
             >
                 {search === '' ? (
@@ -82,13 +60,13 @@ export function CategorySelect(props: CategorySelectProps) {
                 <Icon
                     icon='chevron'
                     className={buildClass('transition duration-200', [
-                        isOpen,
+                        dropdown.isOpen,
                         'rotate-180',
                     ])}
                 />
             </button>
 
-            {isOpen && (
+            {dropdown.isOpen && (
                 <div
                     className={
                         'absolute top-full left-0 mt-1 max-h-30 overflow-auto w-full ' +
@@ -108,7 +86,7 @@ export function CategorySelect(props: CategorySelectProps) {
                             )}
                             onClick={() => {
                                 props.onSelect(category);
-                                close();
+                                dropdown.close();
                             }}
                             type='button'
                             key={category.id}

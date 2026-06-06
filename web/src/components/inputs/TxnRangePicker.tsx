@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Button, Icon, Text } from '../common';
 import { buildClass } from '../../lib/utils';
 import { Input } from './Input';
@@ -7,6 +7,7 @@ import {
     TxnFilterRange,
     TxnFilterRangePreset,
 } from '../../lib/transactions';
+import { useDropdown } from '../../lib/hooks/useDropdown';
 
 const PRESETS_TO_NAMES = {
     today: 'Today',
@@ -22,7 +23,7 @@ type TxnRangePickerProps = {
 };
 
 export function TxnRangePicker(props: TxnRangePickerProps) {
-    const [isOpen, setIsOpen] = useState(false);
+    const dropdown = useDropdown();
 
     const [from, setFrom] = useState(
         typeof props.value === 'object' ? props.value.from : '',
@@ -33,36 +34,10 @@ export function TxnRangePicker(props: TxnRangePickerProps) {
 
     const isFromToValid = from && to && new Date(from) <= new Date(to);
 
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    function open() {
-        setIsOpen(true);
-    }
-
-    function close() {
-        setIsOpen(false);
-    }
-
-    useEffect(() => {
-        const handleClose = (e: MouseEvent) => {
-            if (
-                containerRef.current &&
-                !containerRef.current.contains(e.target as Node)
-            ) {
-                close();
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClose);
-            return () => document.removeEventListener('mousedown', handleClose);
-        }
-    }, [isOpen]);
-
     const onApplyBtnClick = () => {
         if (isFromToValid) {
             props.onChange({ from, to });
-            close();
+            dropdown.close();
         }
     };
 
@@ -74,10 +49,10 @@ export function TxnRangePicker(props: TxnRangePickerProps) {
     }
 
     return (
-        <div className='relative' ref={containerRef}>
+        <div className='relative' ref={dropdown.containerRef}>
             <button
                 className='w-40 h-10 bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
-                onClick={() => open()}
+                onClick={() => dropdown.open()}
                 type='button'
             >
                 <Icon icon='briefcase' />
@@ -87,13 +62,13 @@ export function TxnRangePicker(props: TxnRangePickerProps) {
                 <Icon
                     icon='chevron'
                     className={buildClass('ml-auto transition duration-200', [
-                        isOpen,
+                        dropdown.isOpen,
                         'rotate-180',
                     ])}
                 />
             </button>
 
-            {isOpen && (
+            {dropdown.isOpen && (
                 <div
                     className={
                         'absolute top-full left-0 w-100 mt-1 ' +
@@ -106,7 +81,7 @@ export function TxnRangePicker(props: TxnRangePickerProps) {
                             className='hover:bg-cream-100 rounded flex items-center gap-2 px-3 py-2'
                             onClick={() => {
                                 props.onChange(preset);
-                                close();
+                                dropdown.close();
                             }}
                             type='button'
                             key={preset}
