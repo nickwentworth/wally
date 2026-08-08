@@ -10,6 +10,8 @@ import { Text } from '../common';
 import { Input } from '../inputs/Input';
 import { TxnRangePicker } from '../inputs/TxnRangePicker';
 import { TxnTotalCard } from './TxnTotalCard';
+import { Editable } from '../inputs/Editable';
+import { TxnTableRow } from './TxnTableRow';
 
 type TxnTableFilter = {
     range: TxnFilterRange;
@@ -75,25 +77,7 @@ export function TxnTable() {
 
                 <tbody>
                     {txns.map((txn) => (
-                        <tr className='bg-white' key={`${txn.id}_${txn.date}`}>
-                            <td className='h-10 w-30 border-cream-200 border-r border-t'>
-                                <p className='px-3'>
-                                    {/* TODO: fix backend so this is definitely not null */}
-                                    {txn.date?.split('T')[0]}
-                                </p>
-                            </td>
-                            <td className='h-10 w-40 border-cream-200 border-r border-t'>
-                                <p className='px-3'>&ndash;</p>
-                            </td>
-                            <td className='h-10 w-40 border-cream-200 border-r border-t text-right'>
-                                <p className='px-3'>
-                                    {formatDollar(txn.amount)}
-                                </p>
-                            </td>
-                            <td className='h-10 border-cream-200 border-t'>
-                                <p className='px-3'>{txn.description}</p>
-                            </td>
-                        </tr>
+                        <TxnTableRow txn={txn} key={`${txn.id}_${txn.date}`} />
                     ))}
                 </tbody>
             </table>

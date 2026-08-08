@@ -121,6 +121,17 @@ export class TransactionService {
             .execute();
     }
 
+    async updateTransactionDate(id: number, userId: number, newDate: DateTime) {
+        await this.db
+            .update(transactions)
+            .set({
+                date: newDate.toJSDate(),
+            })
+            .where(
+                and(eq(transactions.id, id), eq(transactions.userId, userId)),
+            );
+    }
+
     // -------------------- Helpers -------------------- //
 
     private serializeRecurrence(r: TxnRecurrence) {

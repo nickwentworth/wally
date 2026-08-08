@@ -31,11 +31,28 @@ export function useTransactionCreate(opts: UseTxnCreateOpts) {
     );
 }
 
+export function useTransactionSingleFieldEdits() {
+    const qc = useQueryClient();
+
+    const invalidateTxns = () =>
+        qc.invalidateQueries({
+            queryKey: trpc.txn.get.queryKey(),
+        });
+
+    const updateDate = useMutation(
+        trpc.txn.updateDate.mutationOptions({
+            onSuccess: invalidateTxns,
+        }),
+    );
+
+    return { updateDate } as const;
+}
+
 // -------------------- Types / Constants -------------------- //
 
 type TxnGetOpts = ApiRouterInputs['txn']['get'];
 
-type Transaction = ApiRouterOutputs['txn']['get'][number];
+export type Transaction = ApiRouterOutputs['txn']['get'][number];
 
 export const TXN_FILTER_RANGE_PRESETS = [
     'today',

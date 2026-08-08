@@ -55,7 +55,7 @@
     input,
     select,
     textarea {
-        @apply focus:outline-0;
+        /* @apply focus:outline-0; */
     }
 
     table {
