@@ -11,6 +11,7 @@ import { useTransactionCreate } from '../lib/transactions';
 import { CategorySelect } from './inputs/CategorySelect';
 import { Input } from './inputs/Input';
 import { todayDateInputStr } from '../lib/utils';
+import { TxnAmountInput } from './inputs/TxnAmountInput';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
@@ -28,7 +29,6 @@ const TxnFormRecur = z.object({
 export type TxnFormRecur = z.infer<typeof TxnFormRecur>;
 
 const TxnFormData = z.object({
-    isExpense: z.boolean(),
     amount: z.coerce.number(),
     categoryId: z.coerce.number().optional(),
     date: z.string(),
@@ -47,7 +47,7 @@ export function TransactionForm(props: TransactionFormProps) {
     const { register, watch, control, setValue, handleSubmit } =
         useForm<TxnFormData>({
             defaultValues: {
-                isExpense: true,
+                amount: 0,
                 date: todayDateInputStr(),
                 isRecurring: false,
                 recurrence: {
@@ -62,7 +62,7 @@ export function TransactionForm(props: TransactionFormProps) {
 
     const createTxn = useTransactionCreate({ onSuccess: props.onSubmit });
 
-    const isExpense = watch('isExpense');
+    const amount = watch('amount');
     const categoryId = watch('categoryId');
     const isRecurring = watch('isRecurring');
     const recurrence = watch('recurrence');
@@ -107,7 +107,6 @@ export function TransactionForm(props: TransactionFormProps) {
 
         createTxn.mutate({
             ...data,
-            amount: data.isExpense ? -data.amount : data.amount,
             recurrence,
         });
     });
@@ -121,22 +120,11 @@ export function TransactionForm(props: TransactionFormProps) {
                 </Button>
             </div>
 
-            <div className='bg-white border-cream-200 border text-3xl font-mono font-medium rounded-lg overflow-hidden flex'>
-                <button
-                    className='w-12 bg-cream-100 border-cream-200 border-r shrink-0'
-                    onClick={() => setValue('isExpense', !isExpense)}
-                    type='button'
-                >
-                    {isExpense ? <>&ndash;</> : '+'}
-                </button>
-                <span className='pl-2 pr-1 py-3'>$</span>
-                <input
-                    className='min-w-0 grow pr-2'
-                    type='text'
-                    placeholder='0.00'
-                    {...register('amount', { required: true })}
-                />
-            </div>
+            <TxnAmountInput
+                amount={amount}
+                setAmount={(amt) => setValue('amount', amt)}
+                size='lg'
+            />
 
             <div className='grid grid-cols-2 gap-4'>
                 <label className='flex flex-col gap-2'>
@@ -155,7 +143,6 @@ export function TransactionForm(props: TransactionFormProps) {
                     />
                 </label>
             </div>
-
             <label className='flex flex-col gap-2'>
                 <Text variant='uppercase'>Description (optional)</Text>
                 <Input
@@ -165,7 +152,6 @@ export function TransactionForm(props: TransactionFormProps) {
                     {...register('description')}
                 />
             </label>
-
             <label className='flex flex-col gap-2'>
                 <Text variant='uppercase'>Recurring</Text>
                 <div className='flex items-center gap-2'>
@@ -180,7 +166,6 @@ export function TransactionForm(props: TransactionFormProps) {
                     )}
                 </div>
             </label>
-
             {isRecurring && (
                 <div className='bg-cream-100 border-cream-200 border rounded-lg flex flex-col gap-4 p-4'>
                     <label className='flex flex-col gap-2'>
@@ -237,7 +222,6 @@ export function TransactionForm(props: TransactionFormProps) {
                     </label>
                 </div>
             )}
-
             <div className='flex justify-end gap-2'>
                 <Button variant='ghost' onClick={props.onCloseClick}>
                     Cancel

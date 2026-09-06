@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
     calculateTotals,
-    formatDollar,
     getTxnFilterRange,
     TxnFilterRange,
     useTransactions,
@@ -10,7 +9,6 @@ import { Text } from '../common';
 import { Input } from '../inputs/Input';
 import { TxnRangePicker } from '../inputs/TxnRangePicker';
 import { TxnTotalCard } from './TxnTotalCard';
-import { Editable } from '../inputs/Editable';
 import { TxnTableRow } from './TxnTableRow';
 
 type TxnTableFilter = {

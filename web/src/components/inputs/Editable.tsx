@@ -31,9 +31,16 @@ export function Editable<T>(props: EditableProps<T>) {
             setDraft(props.value);
 
             // And try to focus the first focus-able element
-            editRef.current
-                ?.querySelector<HTMLElement>('input,select,textarea,button')
-                ?.focus();
+            const el =
+                editRef.current?.querySelector<HTMLElement>(
+                    'input,select,textarea',
+                ) ?? editRef.current?.querySelector<HTMLElement>('button');
+
+            el?.focus();
+            // Also select inputs for easier editing
+            if (el instanceof HTMLInputElement) {
+                el.select();
+            }
         }
     }, [isEditing]);
 

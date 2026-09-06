@@ -132,6 +132,15 @@ export class TransactionService {
             );
     }
 
+    async updateTransactionAmount(id: number, userId: number, amount: number) {
+        await this.db
+            .update(transactions)
+            .set({ amount })
+            .where(
+                and(eq(transactions.id, id), eq(transactions.userId, userId)),
+            );
+    }
+
     // -------------------- Helpers -------------------- //
 
     private serializeRecurrence(r: TxnRecurrence) {

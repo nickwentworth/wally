@@ -45,7 +45,13 @@ export function useTransactionSingleFieldEdits() {
         }),
     );
 
-    return { updateDate } as const;
+    const updateAmount = useMutation(
+        trpc.txn.updateAmount.mutationOptions({
+            onSuccess: invalidateTxns,
+        }),
+    );
+
+    return { updateDate, updateAmount } as const;
 }
 
 // -------------------- Types / Constants -------------------- //

@@ -28,4 +28,19 @@ export const txnRouter = router({
                 input.date,
             );
         }),
+
+    updateAmount: protectedProcedure
+        .input(
+            z.object({
+                id: z.number(),
+                amount: z.number(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            await ctx.services.txn.updateTransactionAmount(
+                input.id,
+                ctx.user.id,
+                input.amount,
+            );
+        }),
 });
