@@ -21,9 +21,17 @@ type EditableProps<T> = {
  */
 export function Editable<T>(props: EditableProps<T>) {
     const [isEditing, setIsEditing] = useState(false);
-    const [draft, setDraft] = useState(props.value);
+
+    const [draftState, setDraftState] = useState(props.value);
+    const draftRef = useRef(draftState);
 
     const editRef = useRef<HTMLDivElement>(null);
+
+    // This must be used instead of the raw state setter so committing works as expected
+    const setDraft = (v: T) => {
+        draftRef.current = v;
+        setDraftState(v);
+    };
 
     useEffect(() => {
         if (isEditing) {
@@ -52,22 +60,20 @@ export function Editable<T>(props: EditableProps<T>) {
                     if (!e.currentTarget.contains(e.relatedTarget)) {
                         // When moving out of this element
                         setIsEditing(false);
-                        if (draft !== props.value) {
-                            console.log('Committing to ' + draft);
-                            props.onCommit(draft);
+                        if (draftRef.current !== props.value) {
+                            props.onCommit(draftRef.current);
                         }
                     }
                 }}
                 onKeyDown={(e) => {
-                    // Escape will act as the key to cancel committing the draft value
+                    // Cancel commit, back to the initial provided value
                     if (e.key.toUpperCase() === 'ESCAPE') {
-                        console.log('Cancelling edit');
                         setDraft(props.value);
                         setIsEditing(false);
                     }
                 }}
             >
-                {props.input(draft, setDraft)}
+                {props.input(draftState, setDraft)}
             </div>
         );
     } else {

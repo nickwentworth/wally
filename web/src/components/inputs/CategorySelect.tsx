@@ -40,6 +40,7 @@ export function CategorySelect(props: CategorySelectProps) {
             <button
                 className='w-full h-10 bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
                 onClick={() => dropdown.open()}
+                onFocus={() => dropdown.open()}
                 type='button'
             >
                 {search === '' ? (

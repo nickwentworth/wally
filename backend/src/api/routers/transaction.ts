@@ -1,5 +1,5 @@
 import { protectedProcedure, router } from '../trpc.js';
-import { TxnCreate, TxnGet } from '../../services/transaction.js';
+import { TxnCreate, TxnGet, TxnUpdate } from '../../services/transaction.js';
 import z from 'zod';
 import { LuxonDateTime } from '../../util/types.js';
 
@@ -14,33 +14,9 @@ export const txnRouter = router({
             await ctx.services.txn.createTransaction(input, ctx.user.id);
         }),
 
-    updateDate: protectedProcedure
-        .input(
-            z.object({
-                id: z.number(),
-                date: LuxonDateTime,
-            }),
-        )
+    update: protectedProcedure
+        .input(TxnUpdate)
         .mutation(async ({ ctx, input }) => {
-            await ctx.services.txn.updateTransactionDate(
-                input.id,
-                ctx.user.id,
-                input.date,
-            );
-        }),
-
-    updateAmount: protectedProcedure
-        .input(
-            z.object({
-                id: z.number(),
-                amount: z.number(),
-            }),
-        )
-        .mutation(async ({ ctx, input }) => {
-            await ctx.services.txn.updateTransactionAmount(
-                input.id,
-                ctx.user.id,
-                input.amount,
-            );
+            await ctx.services.txn.updateTransaction(input, ctx.user.id);
         }),
 });

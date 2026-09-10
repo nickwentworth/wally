@@ -125,7 +125,6 @@ export function TransactionForm(props: TransactionFormProps) {
                 setAmount={(amt) => setValue('amount', amt)}
                 size='lg'
             />
-
             <div className='grid grid-cols-2 gap-4'>
                 <label className='flex flex-col gap-2'>
                     <Text variant='uppercase'>Category</Text>

@@ -55,16 +55,16 @@ export function TxnTable() {
                 <TxnTotalCard label='Expenses' amount={totals.expense} />
             </div>
 
-            <table className='rounded-lg border-cream-200 border overflow-hidden'>
+            <table className='table-fixed w-full rounded-lg border-cream-200 border'>
                 <thead>
                     <tr className='bg-cream-100'>
-                        <th className='px-3 py-2 border-cream-200 border-r'>
+                        <th className='w-35 px-3 py-2 border-cream-200 border-r'>
                             <Text variant='uppercase'>Date</Text>
                         </th>
-                        <th className='px-3 py-2 border-cream-200 border-r'>
+                        <th className='w-40 px-3 py-2 border-cream-200 border-r'>
                             <Text variant='uppercase'>Category</Text>
                         </th>
-                        <th className='px-3 py-2 border-cream-200 border-r text-right'>
+                        <th className='w-40 px-3 py-2 border-cream-200 border-r text-right'>
                             <Text variant='uppercase'>Amount</Text>
                         </th>
                         <th className='px-3 py-2'>

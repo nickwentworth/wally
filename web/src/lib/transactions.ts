@@ -31,27 +31,17 @@ export function useTransactionCreate(opts: UseTxnCreateOpts) {
     );
 }
 
-export function useTransactionSingleFieldEdits() {
+export function useTransactionUpdate() {
     const qc = useQueryClient();
-
-    const invalidateTxns = () =>
-        qc.invalidateQueries({
-            queryKey: trpc.txn.get.queryKey(),
-        });
-
-    const updateDate = useMutation(
-        trpc.txn.updateDate.mutationOptions({
-            onSuccess: invalidateTxns,
+    return useMutation(
+        trpc.txn.update.mutationOptions({
+            onSuccess: () => {
+                qc.invalidateQueries({
+                    queryKey: trpc.txn.get.queryKey(),
+                });
+            },
         }),
     );
-
-    const updateAmount = useMutation(
-        trpc.txn.updateAmount.mutationOptions({
-            onSuccess: invalidateTxns,
-        }),
-    );
-
-    return { updateDate, updateAmount } as const;
 }
 
 // -------------------- Types / Constants -------------------- //

@@ -50,6 +50,14 @@ export const TxnCreate = z.object({
 });
 type TxnCreate = z.infer<typeof TxnCreate>;
 
+export const TxnUpdate = z.object({
+    id: z.int(),
+    amount: z.number().optional(),
+    categoryId: z.int().nullable().optional(),
+    date: LuxonDateTime.optional(),
+});
+type TxnUpdate = z.infer<typeof TxnUpdate>;
+
 type TxnSelectRaw = typeof transactions.$inferSelect;
 
 // -------------------- Service -------------------- //
@@ -121,23 +129,19 @@ export class TransactionService {
             .execute();
     }
 
-    async updateTransactionDate(id: number, userId: number, newDate: DateTime) {
+    async updateTransaction(txn: TxnUpdate, userId: number) {
         await this.db
             .update(transactions)
             .set({
-                date: newDate.toJSDate(),
+                amount: txn.amount,
+                categoryId: txn.categoryId,
+                date: txn.date?.toJSDate(),
             })
             .where(
-                and(eq(transactions.id, id), eq(transactions.userId, userId)),
-            );
-    }
-
-    async updateTransactionAmount(id: number, userId: number, amount: number) {
-        await this.db
-            .update(transactions)
-            .set({ amount })
-            .where(
-                and(eq(transactions.id, id), eq(transactions.userId, userId)),
+                and(
+                    eq(transactions.id, txn.id),
+                    eq(transactions.userId, userId),
+                ),
             );
     }
 
