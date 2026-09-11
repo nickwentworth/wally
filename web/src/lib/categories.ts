@@ -47,7 +47,7 @@ export function useCategoryDelete(opts: UseCategoryDeleteOpts) {
 // -------------------- Types / Constants -------------------- //
 
 export type Category = ApiRouterOutputs['category']['all'][number];
-export type CategoryIcon = Category['icon'];
+export type CategoryIconName = Category['icon'];
 
 export const CATEGORY_COLORS = [
     { bg: '#FBD4D9', fg: '#8A1F31' },

@@ -1,5 +1,5 @@
 import { Button, Text } from '../common';
-import { CategoryBadge } from './CategoryBadge';
+import { CategoryIcon } from './CategoryIcon';
 import { CATEGORY_ICONS } from 'backend/src/services/category';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
@@ -73,7 +73,7 @@ export function CategoryForm(props: CategoryFormProps) {
     return (
         <form className='flex flex-col gap-4 p-4' onSubmit={onSubmit}>
             <div className='flex items-center gap-4'>
-                <CategoryBadge
+                <CategoryIcon
                     variant='parts'
                     fg={color.fg}
                     bg={color.bg}
@@ -96,7 +96,7 @@ export function CategoryForm(props: CategoryFormProps) {
                     <Text variant='uppercase'>Color</Text>
                     <div className='flex flex-wrap gap-2'>
                         {activeAwareColors.map(([c, isActive]) => (
-                            <CategoryBadge
+                            <CategoryIcon
                                 variant='color'
                                 fg={c.fg}
                                 bg={c.bg}
@@ -113,7 +113,7 @@ export function CategoryForm(props: CategoryFormProps) {
                     <Text variant='uppercase'>Icon</Text>
                     <div className='flex flex-wrap gap-2'>
                         {activeAwareIcons.map(([i, isActive]) => (
-                            <CategoryBadge
+                            <CategoryIcon
                                 variant='parts'
                                 icon={i}
                                 fg={isActive ? color.fg : 'unset'}

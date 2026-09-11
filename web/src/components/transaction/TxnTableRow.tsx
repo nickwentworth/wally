@@ -4,7 +4,8 @@ import {
     Transaction,
     useTransactionUpdate,
 } from '../../lib/transactions';
-import { CategoryBadge } from '../category/CategoryBadge';
+import { CategoryIcon } from '../category/CategoryIcon';
+import { CategoryChip } from '../category/CategoryChip';
 import { CategorySelect } from '../inputs/CategorySelect';
 import { Editable } from '../inputs/Editable';
 import { Input } from '../inputs/Input';
@@ -55,10 +56,7 @@ export function TxnTableRow(props: TxnTableRowProps) {
                         const category = fetchCategory(catId);
                         return category ? (
                             <div className='px-2'>
-                                <CategoryBadge
-                                    variant='category'
-                                    category={category}
-                                />
+                                <CategoryChip category={category} />
                             </div>
                         ) : (
                             <p className='px-3'>&ndash;</p>

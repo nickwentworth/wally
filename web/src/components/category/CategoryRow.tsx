@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CategoryForm } from './CategoryForm';
-import { CategoryBadge } from './CategoryBadge';
+import { CategoryIcon } from './CategoryIcon';
 import { Icon } from '../common';
 import { Category } from '../../lib/categories';
 
@@ -44,7 +44,7 @@ export function CategoryRow(props: CategoryRowProps) {
             <td className='border-cream-200 border-t px-2 py-3 flex items-center gap-2'>
                 {props.category ? (
                     <>
-                        <CategoryBadge
+                        <CategoryIcon
                             variant='category'
                             category={props.category}
                         />
@@ -54,7 +54,7 @@ export function CategoryRow(props: CategoryRowProps) {
                     </>
                 ) : (
                     <>
-                        <CategoryBadge variant='empty' />
+                        <CategoryIcon variant='empty' />
                         <span className='text-taupe-400'>Add Category</span>
                     </>
                 )}

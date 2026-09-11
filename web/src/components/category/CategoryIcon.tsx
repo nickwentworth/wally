@@ -1,26 +1,26 @@
-import { Category, CategoryIcon } from '../../lib/categories';
+import { Category, CategoryIconName } from '../../lib/categories';
 import { buildClass } from '../../lib/utils';
 import { Icon, IconType } from '../common';
 
-type CategoryBadgePropsBase =
+type CategoryIconPropsBase =
     // Regular-use case icon for an existing category
     | { variant: 'category'; category: Category }
     // Option for providing props directly as parts
-    | { variant: 'parts'; icon: CategoryIcon; fg: string; bg: string }
+    | { variant: 'parts'; icon: CategoryIconName; fg: string; bg: string }
     // Special case for use in category form color selection
     | { variant: 'color'; fg: string; bg: string }
     // Special case for use in empty category row
     | { variant: 'empty' };
 
-type CategoryBadgeProps = CategoryBadgePropsBase & {
+type CategoryIconProps = CategoryIconPropsBase & {
     size?: 'md' | 'lg';
     isSelected?: boolean;
     onSelect?: () => void;
 };
 
-export function CategoryBadge(props: CategoryBadgeProps) {
+export function CategoryIcon(props: CategoryIconProps) {
     const containerClass = buildClass(
-        'rounded-lg flex items-center justify-center',
+        'rounded-lg flex items-center justify-center shrink-0',
         [!props.size || props.size === 'md', 'h-7 w-7'],
         [props.size === 'lg', 'h-9 w-9'],
         [props.isSelected ?? false, 'outline'],

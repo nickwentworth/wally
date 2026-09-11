@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Category, useCategories } from '../../lib/categories';
-import { CategoryBadge } from '../category/CategoryBadge';
+import { CategoryIcon } from '../category/CategoryIcon';
 import { Icon } from '../common';
 import { buildClass } from '../../lib/utils';
 import { useDropdown } from '../../lib/hooks/useDropdown';
@@ -44,7 +44,7 @@ export function CategorySelect(props: CategorySelectProps) {
                 type='button'
             >
                 {search === '' ? (
-                    <CategoryBadge variant='category' category={selected} />
+                    <CategoryIcon variant='category' category={selected} />
                 ) : (
                     <Icon icon='search' />
                 )}
@@ -92,7 +92,7 @@ export function CategorySelect(props: CategorySelectProps) {
                             type='button'
                             key={category.id}
                         >
-                            <CategoryBadge
+                            <CategoryIcon
                                 variant='category'
                                 category={category}
                             />

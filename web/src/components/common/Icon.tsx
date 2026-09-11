@@ -17,7 +17,7 @@ import {
     ChevronDown,
     Search,
 } from 'lucide-react';
-import { CategoryIcon } from '../../lib/categories';
+import { CategoryIconName } from '../../lib/categories';
 
 const CATEGORY_ICONS = {
     briefcase: Briefcase,
@@ -26,7 +26,7 @@ const CATEGORY_ICONS = {
     house: House,
     shoppping: ShoppingCart,
     utensils: Utensils,
-} satisfies Record<CategoryIcon, LucideIcon>;
+} satisfies Record<CategoryIconName, LucideIcon>;
 
 const ICONS = {
     ...CATEGORY_ICONS,
