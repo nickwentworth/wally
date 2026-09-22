@@ -55,6 +55,7 @@ export function Editable<T>(props: EditableProps<T>) {
     if (isEditing) {
         return (
             <div
+                className='contents'
                 ref={editRef}
                 onBlur={(e) => {
                     if (!e.currentTarget.contains(e.relatedTarget)) {
@@ -79,6 +80,7 @@ export function Editable<T>(props: EditableProps<T>) {
     } else {
         return (
             <div
+                className='contents'
                 onFocus={() => setIsEditing(true)}
                 onClick={() => setIsEditing(true)}
                 tabIndex={0}

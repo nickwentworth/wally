@@ -15,7 +15,7 @@ import { TxnAmountInput } from './inputs/TxnAmountInput';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
 
-const TxnFormRecur = z.object({
+export const TxnFormRecur = z.object({
     rate: z.coerce.number(),
     period: z.enum(TXN_RECUR_PERIODS),
     daysOfWeek: z.number().array(),
@@ -42,6 +42,41 @@ type TransactionFormProps = {
     onCloseClick: () => void;
     onSubmit: () => void;
 };
+
+function txnFormRecurToCreate(
+    r: TxnFormRecur,
+): NonNullable<ApiRouterInputs['txn']['create']['recurrence']> {
+    const rate = Number(r.rate);
+
+    switch (r.period) {
+        case 'day':
+            return { rate, period: 'daily', endsAt: r.endsAt };
+
+        case 'week':
+            return {
+                rate,
+                period: 'weekly',
+                daysOfWeek: r.daysOfWeek,
+                endsAt: r.endsAt,
+            };
+
+        case 'month':
+            return {
+                rate,
+                period: 'monthly',
+                daysOfMonth: r.daysOfMonth,
+                endsAt: r.endsAt,
+            };
+
+        case 'year':
+            return {
+                rate,
+                period: 'yearly',
+                daysOfYear: r.daysOfYear,
+                endsAt: r.endsAt,
+            };
+    }
+}
 
 export function TransactionForm(props: TransactionFormProps) {
     const { register, watch, control, setValue, handleSubmit } =
@@ -74,36 +109,9 @@ export function TransactionForm(props: TransactionFormProps) {
             recurrence: raw.isRecurring ? raw.recurrence : undefined,
         });
 
-        let recurrence: ApiRouterInputs['txn']['create']['recurrence'];
-        switch (data.recurrence?.period) {
-            case undefined:
-                recurrence = undefined;
-                break;
-            case 'day':
-                recurrence = { ...data.recurrence, period: 'daily' };
-                break;
-            case 'week':
-                recurrence = {
-                    ...data.recurrence,
-                    period: 'weekly',
-                    daysOfWeek: data.recurrence.daysOfWeek ?? [],
-                };
-                break;
-            case 'month':
-                recurrence = {
-                    ...data.recurrence,
-                    period: 'monthly',
-                    daysOfMonth: data.recurrence.daysOfMonth ?? [],
-                };
-                break;
-            case 'year':
-                recurrence = {
-                    ...data.recurrence,
-                    period: 'yearly',
-                    daysOfYear: data.recurrence.daysOfYear ?? [],
-                };
-                break;
-        }
+        const recurrence = data.recurrence
+            ? txnFormRecurToCreate(data.recurrence)
+            : undefined;
 
         createTxn.mutate({
             ...data,
@@ -159,7 +167,11 @@ export function TransactionForm(props: TransactionFormProps) {
                         onToggle={(b) => setValue('isRecurring', b)}
                     />
                     {isRecurring && recurrence ? (
-                        <b>{formatRecurrenceName(recurrence)}</b>
+                        <b>
+                            {formatRecurrenceName(
+                                txnFormRecurToCreate(recurrence),
+                            )}
+                        </b>
                     ) : (
                         <span className='text-taupe-400'>Off</span>
                     )}

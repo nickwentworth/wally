@@ -55,6 +55,7 @@ export const TxnUpdate = z.object({
     amount: z.number().optional(),
     categoryId: z.int().nullable().optional(),
     date: LuxonDateTime.optional(),
+    description: z.string().optional(),
 });
 type TxnUpdate = z.infer<typeof TxnUpdate>;
 
@@ -136,6 +137,7 @@ export class TransactionService {
                 amount: txn.amount,
                 categoryId: txn.categoryId,
                 date: txn.date?.toJSDate(),
+                description: txn.description,
             })
             .where(
                 and(

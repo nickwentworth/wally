@@ -1,7 +1,14 @@
-import { TxnFormRecur } from '../components/TransactionForm';
+import { Transaction } from './transactions';
 import { ordinalSuffix, sameItems } from './utils';
 
-// -------------------- Constants -------------------- //
+// -------------------- Types / Constants -------------------- //
+
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
+    ? Omit<T, K>
+    : never;
+
+type Recurrence = NonNullable<Transaction['recurrence']>;
+type RecurrenceParts = DistributiveOmit<Recurrence, 'endsAt'>;
 
 export const WEEKDAYS = [
     'Sunday',
@@ -31,26 +38,27 @@ export type Month = (typeof MONTHS)[number]['month'];
 
 // -------------------- Helpers -------------------- //
 
-export function formatRecurrenceName(r: TxnFormRecur) {
+export function formatRecurrenceName(r: RecurrenceParts) {
     let formatted = '';
 
-    // FIXME: == is required instead of ===, since the input is stored as a string
-    if (r.rate == 1) {
-        if (r.period === 'day') {
-            formatted += 'Daily';
-        } else {
-            formatted +=
-                r.period.charAt(0).toUpperCase() + r.period.slice(1) + 'ly';
-        }
+    if (r.rate === 1) {
+        formatted += r.period.charAt(0).toUpperCase() + r.period.slice(1);
     } else {
-        formatted += `Every ${r.rate} ${r.period}s`;
+        const nouns = {
+            daily: 'days',
+            weekly: 'weeks',
+            monthly: 'months',
+            yearly: 'years',
+        } satisfies Record<Recurrence['period'], string>;
+
+        formatted += `Every ${r.rate} ${nouns[r.period]}`;
     }
 
     switch (r.period) {
-        case 'day':
+        case 'daily':
             break; // No day info for daily recurrence
 
-        case 'week':
+        case 'weekly':
             const weekdays = r.daysOfWeek.map((d) => WEEKDAYS[d]);
 
             if (sameItems(weekdays, ['Saturday', 'Sunday'])) {
@@ -70,12 +78,12 @@ export function formatRecurrenceName(r: TxnFormRecur) {
             }
             break;
 
-        case 'month':
+        case 'monthly':
             const days = r.daysOfMonth.map((d) => `${d}${ordinalSuffix(d)}`);
             formatted += ` on the ${days.join(', ')}`;
             break;
 
-        case 'year':
+        case 'yearly':
             const dates = r.daysOfYear.map((d) => getFormattedMonthAndDay(d));
             formatted += ` on ${dates.join(', ')}`;
             break;

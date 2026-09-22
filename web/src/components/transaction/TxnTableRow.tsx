@@ -10,6 +10,8 @@ import { CategorySelect } from '../inputs/CategorySelect';
 import { Editable } from '../inputs/Editable';
 import { Input } from '../inputs/Input';
 import { TxnAmountInput } from '../inputs/TxnAmountInput';
+import { formatRecurrenceName } from '../../lib/recurrence';
+import { Icon } from '../common';
 
 type TxnTableRowProps = {
     txn: Transaction;
@@ -24,6 +26,10 @@ export function TxnTableRow(props: TxnTableRowProps) {
     if (date === undefined) {
         return 'ERROR';
     }
+
+    const recurrence = props.txn.recurrence
+        ? formatRecurrenceName(props.txn.recurrence)
+        : null;
 
     const fetchCategory = (categoryId: number | null) => {
         return categories?.find((c) => c.id === categoryId);
@@ -96,8 +102,35 @@ export function TxnTableRow(props: TxnTableRowProps) {
                 />
             </td>
 
-            <td className='h-10 border-cream-200 border-t'>
-                <p className='px-3'>{props.txn.description}</p>
+            <td className='h-10 border-cream-200 border-t flex items-center'>
+                {recurrence && (
+                    <span className='bg-cream-100 border border-cream-200 h-6 ml-2 px-2 inline-flex items-center gap-1 rounded-full'>
+                        <Icon icon='repeat' size={12} />
+                        <span className='text-xs font-semibold'>
+                            {recurrence}
+                        </span>
+                    </span>
+                )}
+                <Editable
+                    value={props.txn.description}
+                    display={(desc) => (
+                        <p className='px-3 grow self-stretch content-center'>
+                            {desc}
+                        </p>
+                    )}
+                    input={(desc, setDesc) => (
+                        <Input
+                            className='grow'
+                            type='text'
+                            value={desc ?? ''}
+                            onChange={(e) => setDesc(e.target.value)}
+                            placeholder='Add a note'
+                        />
+                    )}
+                    onCommit={(desc) =>
+                        updateTxn({ description: desc ?? '', id: props.txn.id })
+                    }
+                />
             </td>
         </tr>
     );

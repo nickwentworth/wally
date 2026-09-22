@@ -16,6 +16,7 @@ import {
     Trash2,
     ChevronDown,
     Search,
+    Repeat,
 } from 'lucide-react';
 import { CategoryIconName } from '../../lib/categories';
 
@@ -34,6 +35,7 @@ const ICONS = {
     close: X,
     trash: Trash2,
     check: Check,
+    repeat: Repeat,
     chevron: ChevronDown,
     search: Search,
     settings: Settings,
