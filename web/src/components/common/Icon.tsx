@@ -18,6 +18,7 @@ import {
     Search,
     Repeat,
     List,
+    LayoutGrid,
 } from 'lucide-react';
 import { CategoryIconName } from '../../lib/categories';
 
@@ -38,6 +39,7 @@ const ICONS = {
     check: Check,
     repeat: Repeat,
     list: List,
+    grid: LayoutGrid,
     chevron: ChevronDown,
     search: Search,
     settings: Settings,

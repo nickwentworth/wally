@@ -6,10 +6,10 @@ import {
     useTransactions,
 } from '../../lib/transactions';
 import { Text } from '../common';
-import { Input } from '../inputs/Input';
 import { TxnRangePicker } from '../inputs/TxnRangePicker';
 import { TxnTotalCard } from './TxnTotalCard';
 import { TxnTableRow } from './TxnTableRow';
+import { TxnSearchBar } from '../inputs/TxnSearchBar';
 
 type TxnTableFilter = {
     range: TxnFilterRange;
@@ -42,10 +42,15 @@ export function TxnTable() {
                     onChange={(range) => setFilters({ ...filters, range })}
                 />
 
-                <Input
-                    className='grow'
-                    type='text'
-                    placeholder='Search Transactions'
+                <TxnSearchBar
+                    categoryIds={filters.categoryIds}
+                    onCategoryIdsChange={(ids) =>
+                        setFilters({ ...filters, categoryIds: ids })
+                    }
+                    search={filters.search}
+                    onSearchChange={(search) =>
+                        setFilters({ ...filters, search })
+                    }
                 />
             </div>
 

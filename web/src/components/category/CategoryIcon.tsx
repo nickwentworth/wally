@@ -13,7 +13,7 @@ type CategoryIconPropsBase =
     | { variant: 'empty' };
 
 type CategoryIconProps = CategoryIconPropsBase & {
-    size?: 'md' | 'lg';
+    size?: 'sm' | 'md' | 'lg';
     isSelected?: boolean;
     onSelect?: () => void;
 };
@@ -22,6 +22,7 @@ export function CategoryIcon(props: CategoryIconProps) {
     const containerClass = buildClass(
         'rounded-lg flex items-center justify-center shrink-0',
         [!props.size || props.size === 'md', 'h-7 w-7'],
+        [props.size === 'sm', 'h-5 w-5 rounded-sm'],
         [props.size === 'lg', 'h-9 w-9'],
         [props.isSelected ?? false, 'outline'],
         [props.variant === 'empty', 'border-taupe-300 border border-dashed'],
@@ -56,7 +57,18 @@ export function CategoryIcon(props: CategoryIconProps) {
             break;
     }
 
-    const iconSize = props.size === 'lg' ? 18 : 14;
+    let iconSize;
+    switch (props.size) {
+        case 'sm':
+            iconSize = 12;
+            break;
+        case 'lg':
+            iconSize = 18;
+            break;
+        default:
+            iconSize = 14;
+            break;
+    }
 
     if (props.onSelect) {
         return (
