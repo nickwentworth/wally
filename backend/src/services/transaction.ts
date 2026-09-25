@@ -1,7 +1,17 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import { transactions } from '../db/schema.js';
 import z from 'zod';
-import { and, eq, gte, isNotNull, isNull, lte, or } from 'drizzle-orm';
+import {
+    and,
+    eq,
+    gte,
+    inArray,
+    isNotNull,
+    isNull,
+    like,
+    lte,
+    or,
+} from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import { LuxonDateTime } from '../util/types.js';
 
@@ -11,8 +21,8 @@ export const TxnGet = z.object({
     // limit: z.number(),
     start: LuxonDateTime,
     end: LuxonDateTime,
-    // categoryIds: z.number().array().optional(),
-    // search: z.string().optional(),
+    categoryIds: z.number().array().optional(),
+    search: z.string().optional(),
 });
 type TxnGet = z.infer<typeof TxnGet>;
 
@@ -93,6 +103,13 @@ export class TransactionService {
                         isNotNull(transactions.recurrence),
                         gte(transactions.date, start),
                     ),
+                    // Filters
+                    opts.categoryIds?.length
+                        ? inArray(transactions.categoryId, opts.categoryIds)
+                        : undefined,
+                    opts.search
+                        ? like(transactions.description, `%${opts.search}%`)
+                        : undefined,
                 ),
             )
             .then((rs) => rs.map((r) => this.deserializeTransaction(r)));

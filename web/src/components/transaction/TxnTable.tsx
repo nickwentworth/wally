@@ -26,7 +26,12 @@ export function TxnTable() {
 
     const { start, end } = getTxnFilterRange(filters.range);
 
-    const { data: txns } = useTransactions({ start, end });
+    const { data: txns } = useTransactions({
+        start,
+        end,
+        categoryIds: filters.categoryIds,
+        search: filters.search,
+    });
 
     if (txns === undefined) {
         return <p>Loading...</p>;
