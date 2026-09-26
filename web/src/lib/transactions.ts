@@ -48,7 +48,8 @@ export function useTransactionUpdate() {
 
 type TxnGetOpts = ApiRouterInputs['txn']['get'];
 
-export type Transaction = ApiRouterOutputs['txn']['get'][number];
+export type Transaction =
+    ApiRouterOutputs['txn']['get']['transactions'][number];
 
 export const TXN_FILTER_RANGE_PRESETS = [
     'today',
@@ -68,55 +69,36 @@ export type TxnFilterRange =
 
 // -------------------- Helpers -------------------- //
 
-export function calculateTotals(txns: Transaction[]) {
-    let income = 0;
-    let expense = 0;
-
-    txns.forEach((txn) => {
-        if (txn.amount > 0) {
-            income += txn.amount;
-        } else {
-            expense += txn.amount;
-        }
-    });
-
-    return {
-        income,
-        expense,
-        net: income + expense,
-    } as const;
-}
-
 export function getTxnFilterRange(r: TxnFilterRange) {
-    let start: string;
-    let end: string;
+    let from: string;
+    let to: string;
 
     if (typeof r === 'string') {
         switch (r) {
             case 'today':
-                start = todayDateInputStr();
+                from = todayDateInputStr();
                 break;
             case 'week':
-                start = startOfWeekInputStr();
+                from = startOfWeekInputStr();
                 break;
             case 'month':
-                start = startOfMonthInputStr();
+                from = startOfMonthInputStr();
                 break;
             case 'year':
-                start = startOfYearInputStr();
+                from = startOfYearInputStr();
                 break;
             case 'all':
-                start = new Date(0).toLocaleDateString('en-CA');
+                from = new Date(0).toLocaleDateString('en-CA');
                 break;
         }
 
-        end = todayDateInputStr();
+        to = todayDateInputStr();
     } else {
-        start = r.from;
-        end = r.to;
+        from = r.from;
+        to = r.to;
     }
 
-    return { start, end };
+    return { from, to };
 }
 
 export function formatDollar(amount: number) {

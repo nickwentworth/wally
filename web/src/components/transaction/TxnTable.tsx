@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-    calculateTotals,
     getTxnFilterRange,
     TxnFilterRange,
     useTransactions,
@@ -24,11 +23,11 @@ export function TxnTable() {
         search: '',
     });
 
-    const { start, end } = getTxnFilterRange(filters.range);
+    const { from, to } = getTxnFilterRange(filters.range);
 
     const { data: txns } = useTransactions({
-        start,
-        end,
+        from,
+        to,
         categoryIds: filters.categoryIds,
         search: filters.search,
     });
@@ -36,8 +35,6 @@ export function TxnTable() {
     if (txns === undefined) {
         return <p>Loading...</p>;
     }
-
-    const totals = calculateTotals(txns);
 
     return (
         <div className='flex flex-col gap-4'>
@@ -60,9 +57,9 @@ export function TxnTable() {
             </div>
 
             <div className='grid grid-cols-3 gap-4'>
-                <TxnTotalCard label='Net Balance' amount={totals.net} />
-                <TxnTotalCard label='Income' amount={totals.income} />
-                <TxnTotalCard label='Expenses' amount={totals.expense} />
+                <TxnTotalCard label='Net Balance' amount={txns.totals.net} />
+                <TxnTotalCard label='Income' amount={txns.totals.income} />
+                <TxnTotalCard label='Expenses' amount={txns.totals.expenses} />
             </div>
 
             <table className='table-fixed w-full rounded-lg border-cream-200 border'>
@@ -84,7 +81,7 @@ export function TxnTable() {
                 </thead>
 
                 <tbody>
-                    {txns.map((txn) => (
+                    {txns.transactions.map((txn) => (
                         <TxnTableRow txn={txn} key={`${txn.id}_${txn.date}`} />
                     ))}
                 </tbody>

@@ -17,15 +17,6 @@ import { LuxonDateTime } from '../util/types.js';
 
 // -------------------- Schemas/Types -------------------- //
 
-export const TxnGet = z.object({
-    // limit: z.number(),
-    start: LuxonDateTime,
-    end: LuxonDateTime,
-    categoryIds: z.number().array().optional(),
-    search: z.string().optional(),
-});
-type TxnGet = z.infer<typeof TxnGet>;
-
 const TxnRecurrenceBase = z.object({
     rate: z.number(),
     endsAt: LuxonDateTime.optional(),
@@ -50,6 +41,16 @@ const TxnRecurrence = z.discriminatedUnion('period', [
     }),
 ]);
 type TxnRecurrence = z.infer<typeof TxnRecurrence>;
+
+export const TxnGet = z.object({
+    from: LuxonDateTime,
+    to: LuxonDateTime,
+    categoryIds: z.number().array().optional(),
+    search: z.string().optional(),
+    offset: z.int().min(0).default(0),
+    limit: z.int().min(1).max(100).default(50),
+});
+type TxnGet = z.infer<typeof TxnGet>;
 
 export const TxnCreate = z.object({
     amount: z.number(),
@@ -82,8 +83,8 @@ export class TransactionService {
 
     async getTransactions(opts: TxnGet, userId: number) {
         // Drizzle wants js dates, so pre-process
-        const start = opts.start.toJSDate();
-        const end = opts.end.toJSDate();
+        const fromDate = opts.from.toJSDate();
+        const toDate = opts.to.toJSDate();
 
         const txns = await this.db
             .select()
@@ -92,16 +93,16 @@ export class TransactionService {
                 and(
                     eq(transactions.userId, userId),
                     // Ensure all transactions don't exist after the time range ends
-                    lte(transactions.date, end),
+                    lte(transactions.date, toDate),
                     // Ensure recurring transactions don't end before the time range starts
                     or(
                         isNull(transactions.recurrenceEndsAt),
-                        gte(transactions.recurrenceEndsAt, start),
+                        gte(transactions.recurrenceEndsAt, fromDate),
                     ),
                     // Ensure non-recurring transactions don't exist before the time range starts
                     or(
                         isNotNull(transactions.recurrence),
-                        gte(transactions.date, start),
+                        gte(transactions.date, fromDate),
                     ),
                     // Filters
                     opts.categoryIds?.length
@@ -118,8 +119,8 @@ export class TransactionService {
             const dates = this.extrapolateRecurrence(
                 txn.recurrence,
                 txn.date,
-                opts.start,
-                opts.end,
+                opts.from,
+                opts.to,
             );
             return dates.map((date) => ({ ...txn, date }));
         });
@@ -128,7 +129,26 @@ export class TransactionService {
             (a, b) => b.date.toUnixInteger() - a.date.toUnixInteger(),
         );
 
-        return extrapolated;
+        let net = 0,
+            income = 0,
+            expenses = 0;
+        extrapolated.forEach((txn) => {
+            net += txn.amount;
+            if (txn.amount > 0) {
+                income += txn.amount;
+            } else {
+                expenses += txn.amount;
+            }
+        });
+
+        return {
+            transactions: extrapolated.slice(
+                opts.offset,
+                opts.offset + opts.limit,
+            ),
+            totals: { net, income, expenses },
+            count: extrapolated.length,
+        };
     }
 
     async createTransaction(txn: TxnCreate, userId: number) {
