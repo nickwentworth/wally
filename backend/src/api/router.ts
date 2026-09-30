@@ -1,15 +1,17 @@
 import { inferRouterInputs, inferRouterOutputs } from '@trpc/server';
 import { createExpressMiddleware } from '@trpc/server/adapters/express';
 import { Services } from '../services/index.js';
-import { txnRouter } from './routers/transaction.js';
+import { transactionRouter } from './routers/transaction.js';
 import { userRouter } from './routers/user.js';
 import { createApiContext, router } from './trpc.js';
 import { categoryRouter } from './routers/category.js';
+import { occurrenceRouter } from './routers/occurrence.js';
 
 const apiRouter = router({
     user: userRouter,
     category: categoryRouter,
-    txn: txnRouter,
+    transaction: transactionRouter,
+    occurrence: occurrenceRouter,
 });
 
 export type ApiRouter = typeof apiRouter;

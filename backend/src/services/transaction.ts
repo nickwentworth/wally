@@ -14,35 +14,16 @@ import {
 } from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import { LuxonDateTime } from '../util/types.js';
+import {
+    deserializeRecurrence,
+    extrapolateRecurrence,
+    Recurrence,
+    serializeRecurrence,
+} from './recurrence.js';
 
 // -------------------- Schemas/Types -------------------- //
 
-const TxnRecurrenceBase = z.object({
-    rate: z.number(),
-    endsAt: LuxonDateTime.optional(),
-});
-type TxnRecurrenceBase = z.infer<typeof TxnRecurrenceBase>;
-
-const TxnRecurrence = z.discriminatedUnion('period', [
-    TxnRecurrenceBase.extend({
-        period: z.literal('daily'),
-    }),
-    TxnRecurrenceBase.extend({
-        period: z.literal('weekly'),
-        daysOfWeek: z.int().min(0).max(6).array().nonempty(),
-    }),
-    TxnRecurrenceBase.extend({
-        period: z.literal('monthly'),
-        daysOfMonth: z.int().min(1).max(31).array().nonempty(),
-    }),
-    TxnRecurrenceBase.extend({
-        period: z.literal('yearly'),
-        daysOfYear: z.int().min(1).max(366).array().nonempty(),
-    }),
-]);
-type TxnRecurrence = z.infer<typeof TxnRecurrence>;
-
-export const TxnGet = z.object({
+export const OccurrenceList = z.object({
     from: LuxonDateTime,
     to: LuxonDateTime,
     categoryIds: z.number().array().optional(),
@@ -50,27 +31,27 @@ export const TxnGet = z.object({
     offset: z.int().min(0).default(0),
     limit: z.int().min(1).max(100).default(50),
 });
-type TxnGet = z.infer<typeof TxnGet>;
+type OccurrenceList = z.infer<typeof OccurrenceList>;
 
-export const TxnCreate = z.object({
+export const TransactionCreate = z.object({
     amount: z.number(),
     categoryId: z.int().optional(),
     date: LuxonDateTime,
     description: z.string().optional(),
-    recurrence: TxnRecurrence.optional(),
+    recurrence: Recurrence.optional(),
 });
-type TxnCreate = z.infer<typeof TxnCreate>;
+type TransactionCreate = z.infer<typeof TransactionCreate>;
 
-export const TxnUpdate = z.object({
+export const TransactionUpdate = z.object({
     id: z.int(),
     amount: z.number().optional(),
     categoryId: z.int().nullable().optional(),
     date: LuxonDateTime.optional(),
     description: z.string().optional(),
 });
-type TxnUpdate = z.infer<typeof TxnUpdate>;
+type TransactionUpdate = z.infer<typeof TransactionUpdate>;
 
-type TxnSelectRaw = typeof transactions.$inferSelect;
+type Transaction = ReturnType<typeof deserializeTransaction>;
 
 // -------------------- Service -------------------- //
 
@@ -81,7 +62,8 @@ export class TransactionService {
         this.db = db;
     }
 
-    async getTransactions(opts: TxnGet, userId: number) {
+    // TODO: maybe should be in its own service later on
+    async listOccurrences(opts: OccurrenceList, userId: number) {
         // Drizzle wants js dates, so pre-process
         const fromDate = opts.from.toJSDate();
         const toDate = opts.to.toJSDate();
@@ -113,45 +95,39 @@ export class TransactionService {
                         : undefined,
                 ),
             )
-            .then((rs) => rs.map((r) => this.deserializeTransaction(r)));
+            .then((rs) => rs.map(deserializeTransaction));
 
-        const extrapolated = txns.flatMap((txn) => {
-            const dates = this.extrapolateRecurrence(
-                txn.recurrence,
-                txn.date,
-                opts.from,
-                opts.to,
-            );
-            return dates.map((date) => ({ ...txn, date }));
-        });
+        const occurrences = txns.flatMap((txn) =>
+            getTransactionOccurrences(txn, opts.from, opts.to),
+        );
 
-        extrapolated.sort(
+        occurrences.sort(
             (a, b) => b.date.toUnixInteger() - a.date.toUnixInteger(),
         );
 
         let net = 0,
             income = 0,
             expenses = 0;
-        extrapolated.forEach((txn) => {
-            net += txn.amount;
-            if (txn.amount > 0) {
-                income += txn.amount;
+        occurrences.forEach((occ) => {
+            net += occ.amount;
+            if (occ.amount > 0) {
+                income += occ.amount;
             } else {
-                expenses += txn.amount;
+                expenses += occ.amount;
             }
         });
 
         return {
-            transactions: extrapolated.slice(
+            occurrences: occurrences.slice(
                 opts.offset,
                 opts.offset + opts.limit,
             ),
             totals: { net, income, expenses },
-            count: extrapolated.length,
+            count: occurrences.length,
         };
     }
 
-    async createTransaction(txn: TxnCreate, userId: number) {
+    async create(txn: TransactionCreate, userId: number) {
         await this.db
             .insert(transactions)
             .values({
@@ -160,14 +136,14 @@ export class TransactionService {
                 userId,
                 id: undefined,
                 recurrence: txn.recurrence
-                    ? this.serializeRecurrence(txn.recurrence)
+                    ? serializeRecurrence(txn.recurrence)
                     : null,
                 recurrenceEndsAt: txn.recurrence?.endsAt?.toJSDate(),
             })
             .execute();
     }
 
-    async updateTransaction(txn: TxnUpdate, userId: number) {
+    async update(txn: TransactionUpdate, userId: number) {
         await this.db
             .update(transactions)
             .set({
@@ -183,166 +159,36 @@ export class TransactionService {
                 ),
             );
     }
+}
 
-    // -------------------- Helpers -------------------- //
+function deserializeTransaction(raw: typeof transactions.$inferSelect) {
+    const { date, recurrence, recurrenceEndsAt, ...rest } = raw;
 
-    private serializeRecurrence(r: TxnRecurrence) {
-        switch (r.period) {
-            case 'daily':
-                return [r.rate, 'D'].join(';');
-            case 'weekly':
-                return [r.rate, 'W', r.daysOfWeek.join(',')].join(';');
-            case 'monthly':
-                return [r.rate, 'M', r.daysOfMonth.join(',')].join(';');
-            case 'yearly':
-                return [r.rate, 'Y', r.daysOfYear.join(',')].join(';');
-        }
-    }
+    const r = recurrence
+        ? deserializeRecurrence(recurrence, recurrenceEndsAt ?? undefined)
+        : null;
 
-    private deserializeTransaction(raw: TxnSelectRaw) {
-        const { date, recurrence, recurrenceEndsAt, ...rest } = raw;
+    return {
+        ...rest,
+        date: DateTime.fromJSDate(date),
+        recurrence: r,
+    };
+}
 
-        const r = recurrence
-            ? this.deserializeRecurrence(
-                  recurrence,
-                  recurrenceEndsAt ?? undefined,
-              )
-            : null;
+function getTransactionOccurrences(
+    txn: Transaction,
+    from: DateTime,
+    to: DateTime,
+) {
+    const dates = txn.recurrence
+        ? extrapolateRecurrence(txn.recurrence, txn.date, from, to)
+        : [txn.date];
 
-        return {
-            ...rest,
-            date: DateTime.fromJSDate(date),
-            recurrence: r,
-        };
-    }
+    const { id, ...rest } = txn;
 
-    private deserializeRecurrence(data: string, endsAt?: Date): TxnRecurrence {
-        const parts = data.split(';');
-
-        const rate = Number.parseInt(parts[0]);
-        const period = parts[1];
-        const days = parts[2];
-
-        const base = {
-            rate: rate,
-            endsAt: endsAt ? DateTime.fromJSDate(endsAt) : undefined,
-        } satisfies TxnRecurrenceBase;
-
-        const splitDays = () => days.split(',').map((d) => Number.parseInt(d));
-
-        switch (period) {
-            case 'D':
-                return { ...base, period: 'daily' };
-            case 'W':
-                return {
-                    ...base,
-                    period: 'weekly',
-                    daysOfWeek: splitDays(),
-                };
-            case 'M':
-                return {
-                    ...base,
-                    period: 'monthly',
-                    daysOfMonth: splitDays(),
-                };
-            case 'Y':
-                return {
-                    ...base,
-                    period: 'yearly',
-                    daysOfYear: splitDays(),
-                };
-            default:
-                throw new Error();
-        }
-    }
-
-    private extrapolateRecurrence(
-        recurrence: TxnRecurrence | null,
-        firstDate: DateTime,
-        rangeStart: DateTime,
-        rangeEnd: DateTime,
-    ) {
-        // Obviously if there is no recurrence, no need to extrapolate
-        if (recurrence === null) {
-            return [firstDate];
-        }
-
-        // Our main cursor of the current date as we iterate, to handle different rates it must
-        // be set to this transaction's start date (even if it is way before the start range)
-        let date = firstDate;
-
-        let endsAt = rangeEnd;
-        if (recurrence.endsAt && recurrence.endsAt < endsAt) {
-            endsAt = recurrence.endsAt;
-        }
-
-        // The main difference between extrapolating the recurrence periods are determining if
-        // we should include a transaction on a given date, and how many days to add per iteration
-        let isValidFn: () => boolean;
-        let dayAddFn: () => void;
-
-        switch (recurrence.period) {
-            case 'daily':
-                isValidFn = () => date >= rangeStart;
-                dayAddFn = () => {
-                    date = date.plus({ days: recurrence.rate });
-                };
-                break;
-
-            case 'weekly':
-                isValidFn = () =>
-                    date >= rangeStart &&
-                    recurrence.daysOfWeek.includes(date.weekday - 1);
-
-                dayAddFn = () => {
-                    date = date.plus({ days: 1 });
-                    if (date.weekday === 1 && recurrence.rate > 1) {
-                        // handle skipped weeks if we're now on a Monday
-                        date = date.plus({ weeks: recurrence.rate - 1 });
-                    }
-                };
-
-                break;
-
-            case 'monthly':
-                isValidFn = () =>
-                    date >= rangeStart &&
-                    recurrence.daysOfMonth.includes(date.day);
-
-                dayAddFn = () => {
-                    date = date.plus({ days: 1 });
-                    if (date.day === 1 && recurrence.rate > 1) {
-                        // handle skipped months if we're now on the 1st
-                        date = date.plus({ months: recurrence.rate - 1 });
-                    }
-                };
-
-                break;
-
-            case 'yearly':
-                isValidFn = () =>
-                    date >= rangeStart &&
-                    recurrence.daysOfYear.includes(date.ordinal); // FIXME: this probably doesn't work for feb 29th
-
-                dayAddFn = () => {
-                    date = date.plus({ days: 1 });
-                    if (date.ordinal === 1 && recurrence.rate > 1) {
-                        // handle skipped years if we're now on January 1st
-                        date = date.plus({ years: recurrence.rate - 1 });
-                    }
-                };
-
-                break;
-        }
-
-        // Now all we need to do is iterate from start to end
-        const dates = [];
-        while (date <= endsAt) {
-            if (isValidFn()) {
-                dates.push(date);
-            }
-            dayAddFn();
-        }
-        return dates;
-    }
+    return dates.map((date) => ({
+        ...rest,
+        date,
+        transactionId: id,
+    }));
 }

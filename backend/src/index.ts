@@ -31,7 +31,7 @@ const db = drizzle(mysqlPool);
 const services = {
     user: new UserService(db),
     session: new SessionService(db),
-    txn: new TransactionService(db),
+    transaction: new TransactionService(db),
     category: new CategoryService(db),
 } satisfies Services;
 

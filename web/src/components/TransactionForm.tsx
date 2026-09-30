@@ -10,7 +10,7 @@ import { formatRecurrenceName } from '../lib/recurrence';
 import { useTransactionCreate } from '../lib/transactions';
 import { CategorySelect } from './inputs/CategorySelect';
 import { Input } from './inputs/Input';
-import { todayDateInputStr } from '../lib/utils';
+import { todayDateInputStr } from '../lib/dates';
 import { TxnAmountInput } from './inputs/TxnAmountInput';
 
 const TXN_RECUR_PERIODS = ['day', 'week', 'month', 'year'] as const;
@@ -45,7 +45,7 @@ type TransactionFormProps = {
 
 function txnFormRecurToCreate(
     r: TxnFormRecur,
-): NonNullable<ApiRouterInputs['txn']['create']['recurrence']> {
+): NonNullable<ApiRouterInputs['transaction']['create']['recurrence']> {
     const rate = Number(r.rate);
 
     switch (r.period) {

@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Button, Icon, Text } from '../common';
 import { buildClass } from '../../lib/utils';
 import { Input } from './Input';
-import {
-    TXN_FILTER_RANGE_PRESETS,
-    TxnFilterRange,
-    TxnFilterRangePreset,
-} from '../../lib/transactions';
 import { useDropdown } from '../../lib/hooks/useDropdown';
+import {
+    DATE_RANGE_PRESETS,
+    DateRange,
+    DateRangePreset,
+} from '../../lib/dates';
 
 const PRESETS_TO_NAMES = {
     today: 'Today',
@@ -15,14 +15,14 @@ const PRESETS_TO_NAMES = {
     month: 'This month',
     year: 'This year',
     all: 'All time',
-} satisfies Record<TxnFilterRangePreset, string>;
+} satisfies Record<DateRangePreset, string>;
 
-type TxnRangePickerProps = {
-    value: TxnFilterRange;
-    onChange: (range: TxnFilterRange) => void;
+type DateRangePickerProps = {
+    value: DateRange;
+    onChange: (range: DateRange) => void;
 };
 
-export function TxnRangePicker(props: TxnRangePickerProps) {
+export function DateRangePicker(props: DateRangePickerProps) {
     const dropdown = useDropdown();
 
     const [from, setFrom] = useState(
@@ -76,7 +76,7 @@ export function TxnRangePicker(props: TxnRangePickerProps) {
                         'flex flex-col p-1'
                     }
                 >
-                    {TXN_FILTER_RANGE_PRESETS.map((preset) => (
+                    {DATE_RANGE_PRESETS.map((preset) => (
                         <button
                             className='hover:bg-cream-100 rounded flex items-center gap-2 px-3 py-2'
                             onClick={() => {

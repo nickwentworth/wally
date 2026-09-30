@@ -1,10 +1,5 @@
 import { useCategories } from '../../lib/categories';
-import {
-    formatDollar,
-    Transaction,
-    useTransactionUpdate,
-} from '../../lib/transactions';
-import { CategoryIcon } from '../category/CategoryIcon';
+import { formatDollar, useTransactionUpdate } from '../../lib/transactions';
 import { CategoryChip } from '../category/CategoryChip';
 import { CategorySelect } from '../inputs/CategorySelect';
 import { Editable } from '../inputs/Editable';
@@ -12,9 +7,10 @@ import { Input } from '../inputs/Input';
 import { TxnAmountInput } from '../inputs/TxnAmountInput';
 import { formatRecurrenceName } from '../../lib/recurrence';
 import { Icon } from '../common';
+import { Occurrence } from '../../lib/occurrences';
 
 type TxnTableRowProps = {
-    txn: Transaction;
+    occurrence: Occurrence;
 };
 
 export function TxnTableRow(props: TxnTableRowProps) {
@@ -22,13 +18,13 @@ export function TxnTableRow(props: TxnTableRowProps) {
     const { data: categories } = useCategories();
 
     // TODO: fix backend so this is definitely not null
-    const date = props.txn.date?.split('T')[0];
+    const date = props.occurrence.date?.split('T')[0];
     if (date === undefined) {
         return 'ERROR';
     }
 
-    const recurrence = props.txn.recurrence
-        ? formatRecurrenceName(props.txn.recurrence)
+    const recurrence = props.occurrence.recurrence
+        ? formatRecurrenceName(props.occurrence.recurrence)
         : null;
 
     const fetchCategory = (categoryId: number | null) => {
@@ -50,14 +46,17 @@ export function TxnTableRow(props: TxnTableRowProps) {
                         />
                     )}
                     onCommit={(d) => {
-                        updateTxn({ date: d, id: props.txn.id });
+                        updateTxn({
+                            date: d,
+                            id: props.occurrence.transactionId,
+                        });
                     }}
                 />
             </td>
 
             <td className='h-10 border-cream-200 border-r border-t'>
                 <Editable
-                    value={props.txn.categoryId}
+                    value={props.occurrence.categoryId}
                     display={(catId) => {
                         const category = fetchCategory(catId);
                         return category ? (
@@ -78,14 +77,17 @@ export function TxnTableRow(props: TxnTableRowProps) {
                         />
                     )}
                     onCommit={(catId) =>
-                        updateTxn({ categoryId: catId, id: props.txn.id })
+                        updateTxn({
+                            categoryId: catId,
+                            id: props.occurrence.transactionId,
+                        })
                     }
                 />
             </td>
 
             <td className='h-10 border-cream-200 border-r border-t text-right'>
                 <Editable
-                    value={props.txn.amount}
+                    value={props.occurrence.amount}
                     display={(amt) => (
                         <p className='px-3'>{formatDollar(amt)}</p>
                     )}
@@ -97,7 +99,10 @@ export function TxnTableRow(props: TxnTableRowProps) {
                         />
                     )}
                     onCommit={(amt) => {
-                        updateTxn({ amount: amt, id: props.txn.id });
+                        updateTxn({
+                            amount: amt,
+                            id: props.occurrence.transactionId,
+                        });
                     }}
                 />
             </td>
@@ -112,7 +117,7 @@ export function TxnTableRow(props: TxnTableRowProps) {
                     </span>
                 )}
                 <Editable
-                    value={props.txn.description}
+                    value={props.occurrence.description}
                     display={(desc) => (
                         <p className='px-3 grow self-stretch content-center'>
                             {desc}
@@ -128,7 +133,10 @@ export function TxnTableRow(props: TxnTableRowProps) {
                         />
                     )}
                     onCommit={(desc) =>
-                        updateTxn({ description: desc ?? '', id: props.txn.id })
+                        updateTxn({
+                            description: desc ?? '',
+                            id: props.occurrence.transactionId,
+                        })
                     }
                 />
             </td>

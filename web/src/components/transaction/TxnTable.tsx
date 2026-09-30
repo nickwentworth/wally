@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import {
-    getTxnFilterRange,
-    TxnFilterRange,
-    useTransactions,
-} from '../../lib/transactions';
+
 import { Text } from '../common';
-import { TxnRangePicker } from '../inputs/TxnRangePicker';
+import { DateRangePicker } from '../inputs/DateRangePicker';
 import { TxnTotalCard } from './TxnTotalCard';
 import { TxnTableRow } from './TxnTableRow';
 import { TxnSearchBar } from '../inputs/TxnSearchBar';
+import { DateRange, resolveDateRange } from '../../lib/dates';
+import { useOccurrences } from '../../lib/occurrences';
 
 type TxnTableFilter = {
-    range: TxnFilterRange;
+    range: DateRange;
     categoryIds: number[];
     search: string;
 };
@@ -23,23 +21,23 @@ export function TxnTable() {
         search: '',
     });
 
-    const { from, to } = getTxnFilterRange(filters.range);
+    const { from, to } = resolveDateRange(filters.range);
 
-    const { data: txns } = useTransactions({
+    const { data } = useOccurrences({
         from,
         to,
         categoryIds: filters.categoryIds,
         search: filters.search,
     });
 
-    if (txns === undefined) {
+    if (data === undefined) {
         return <p>Loading...</p>;
     }
 
     return (
         <div className='flex flex-col gap-4'>
             <div className='flex gap-4'>
-                <TxnRangePicker
+                <DateRangePicker
                     value={filters.range}
                     onChange={(range) => setFilters({ ...filters, range })}
                 />
@@ -57,9 +55,9 @@ export function TxnTable() {
             </div>
 
             <div className='grid grid-cols-3 gap-4'>
-                <TxnTotalCard label='Net Balance' amount={txns.totals.net} />
-                <TxnTotalCard label='Income' amount={txns.totals.income} />
-                <TxnTotalCard label='Expenses' amount={txns.totals.expenses} />
+                <TxnTotalCard label='Net Balance' amount={data.totals.net} />
+                <TxnTotalCard label='Income' amount={data.totals.income} />
+                <TxnTotalCard label='Expenses' amount={data.totals.expenses} />
             </div>
 
             <table className='table-fixed w-full rounded-lg border-cream-200 border'>
@@ -81,8 +79,11 @@ export function TxnTable() {
                 </thead>
 
                 <tbody>
-                    {txns.transactions.map((txn) => (
-                        <TxnTableRow txn={txn} key={`${txn.id}_${txn.date}`} />
+                    {data.occurrences.map((occ) => (
+                        <TxnTableRow
+                            occurrence={occ}
+                            key={`${occ.transactionId}_${occ.date}`}
+                        />
                     ))}
                 </tbody>
             </table>

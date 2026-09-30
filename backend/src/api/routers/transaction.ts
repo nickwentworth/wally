@@ -1,22 +1,19 @@
 import { protectedProcedure, router } from '../trpc.js';
-import { TxnCreate, TxnGet, TxnUpdate } from '../../services/transaction.js';
-import z from 'zod';
-import { LuxonDateTime } from '../../util/types.js';
+import {
+    TransactionCreate,
+    TransactionUpdate,
+} from '../../services/transaction.js';
 
-export const txnRouter = router({
-    get: protectedProcedure.input(TxnGet).query(async ({ ctx, input }) => {
-        return await ctx.services.txn.getTransactions(input, ctx.user.id);
-    }),
-
+export const transactionRouter = router({
     create: protectedProcedure
-        .input(TxnCreate)
+        .input(TransactionCreate)
         .mutation(async ({ ctx, input }) => {
-            await ctx.services.txn.createTransaction(input, ctx.user.id);
+            await ctx.services.transaction.create(input, ctx.user.id);
         }),
 
     update: protectedProcedure
-        .input(TxnUpdate)
+        .input(TransactionUpdate)
         .mutation(async ({ ctx, input }) => {
-            await ctx.services.txn.updateTransaction(input, ctx.user.id);
+            await ctx.services.transaction.update(input, ctx.user.id);
         }),
 });

@@ -6,7 +6,7 @@ import { UserService } from './user.js';
 export type Services = {
     user: UserService;
     session: SessionService;
-    txn: TransactionService;
+    transaction: TransactionService;
     category: CategoryService;
 };
 
