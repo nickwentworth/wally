@@ -23,6 +23,11 @@ import {
 
 // -------------------- Schemas/Types -------------------- //
 
+export const TransactionList = z.object({
+    recurringOnly: z.boolean().default(false),
+});
+type TransactionList = z.infer<typeof TransactionList>;
+
 export const OccurrenceList = z.object({
     from: LuxonDateTime,
     to: LuxonDateTime,
@@ -60,6 +65,23 @@ export class TransactionService {
 
     constructor(db: MySql2Database) {
         this.db = db;
+    }
+
+    async list(opts: TransactionList, userId: number) {
+        const txns = await this.db
+            .select()
+            .from(transactions)
+            .where(
+                and(
+                    eq(transactions.userId, userId),
+                    opts.recurringOnly
+                        ? isNotNull(transactions.recurrence)
+                        : undefined,
+                ),
+            )
+            .then((rs) => rs.map(deserializeTransaction));
+
+        return txns;
     }
 
     // TODO: maybe should be in its own service later on

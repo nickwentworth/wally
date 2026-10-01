@@ -61,4 +61,8 @@
     table {
         @apply text-left border-separate border-spacing-0;
     }
+
+    hr {
+        @apply text-taupe-200;
+    }
 }

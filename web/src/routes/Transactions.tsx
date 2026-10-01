@@ -3,6 +3,7 @@ import { Button } from '../components/common';
 import { Tab, Tabs } from '../components/common/Tabs';
 import { TxnTable } from '../components/transaction/TxnTable';
 import { useProtectedLayoutContext } from '../ProtectedLayout';
+import { RecurringTransactionGrid } from '../components/transaction/RecurringTransactionGrid';
 
 const TXN_TABS = {
     transactions: { label: 'Transactions', icon: 'list' },
@@ -17,7 +18,7 @@ export function Transactions() {
 
     const tabs = {
         transactions: <TxnTable />,
-        recurring: <div>TODO: recurring transactions</div>,
+        recurring: <RecurringTransactionGrid />,
     } satisfies Record<TxnTab, React.ReactElement>;
 
     return (

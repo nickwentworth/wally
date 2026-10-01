@@ -1,7 +1,11 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { trpc } from './trpc';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ApiRouterInputs, ApiRouterOutputs, trpc } from './trpc';
 
 // -------------------- Hooks -------------------- //
+
+export function useTransactions(opts: ApiRouterInputs['transaction']['list']) {
+    return useQuery(trpc.transaction.list.queryOptions(opts));
+}
 
 type UseTxnCreateOpts = {
     onSuccess?: () => void;
@@ -28,6 +32,10 @@ export function useTransactionUpdate() {
     return useMutation(
         trpc.transaction.update.mutationOptions({
             onSuccess: () => {
+                // TODO: can these be combined?
+                qc.invalidateQueries({
+                    queryKey: trpc.transaction.list.queryKey(),
+                });
                 qc.invalidateQueries({
                     queryKey: trpc.occurrence.list.queryKey(),
                 });
@@ -35,6 +43,10 @@ export function useTransactionUpdate() {
         }),
     );
 }
+
+/* -------------------- Types / Constants -------------------- */
+
+export type Transaction = ApiRouterOutputs['transaction']['list'][number];
 
 // -------------------- Helpers -------------------- //
 

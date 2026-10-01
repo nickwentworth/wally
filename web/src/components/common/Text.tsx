@@ -1,6 +1,8 @@
+import React from 'react';
+
 type TextProps = {
     variant: 'uppercase';
-    children: string;
+    children: React.ReactNode;
 };
 
 export function Text(props: TextProps) {
