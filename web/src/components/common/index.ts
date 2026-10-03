@@ -1,4 +1,4 @@
 export { Button } from './Button';
+export { Dialog, useDialog } from './Dialog';
 export { Icon, type IconType } from './Icon';
-export { Modal, useModal } from './Modal';
 export { Text } from './Text';
