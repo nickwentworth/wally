@@ -1,29 +1,24 @@
 import { useQuery } from '@tanstack/react-query';
 import { trpc } from '../../lib/trpc';
-import { Button, Icon } from '../common';
+import { Icon } from '../common';
 import { NavBarLink } from './NavBarLink';
 
-type NavBarProps = {
-    onAddTransactionClick: () => void;
-};
-
-export function NavBar(props: NavBarProps) {
+export function NavBar() {
     // TODO: refine logic and loading handling, just testing for now
     const userQuery = useQuery(trpc.user.me.queryOptions());
 
     return (
-        <nav className='bg-cream-100 border-cream-200 border-r w-60 flex flex-col gap-5 p-5'>
-            <h2 className='font-bold'>Wally</h2>
+        <nav className='bg-cream-100 border-cream-200 border-r w-55 flex flex-col gap-3 p-3'>
+            <div className='flex gap-2 p-2 items-center'>
+                <div className='text-white bg-moss-500 p-1.5 rounded-lg'>
+                    <Icon icon='utensils' size={16} />
+                </div>
+                <strong className='font-bold'>Wally</strong>
 
-            <Button
-                variant='primary'
-                left='plus'
-                onClick={props.onAddTransactionClick}
-            >
-                Add
-            </Button>
+                <Icon className='ml-auto' icon='close' size={16} />
+            </div>
 
-            <div className='flex flex-col gap-px'>
+            <div className='mb-auto flex flex-col gap-px'>
                 <NavBarLink
                     href='/transactions'
                     text='Transactions'
@@ -33,22 +28,27 @@ export function NavBar(props: NavBarProps) {
                 <NavBarLink href='/categories' text='Categories' icon='tag' />
             </div>
 
-            <div className='mt-auto bg-cream-50 border-cream-200 border rounded-lg flex items-center gap-3 p-4'>
-                <div className='bg-moss-200 rounded-full w-8 h-8 flex items-center justify-center shrink-0'>
-                    <strong className='text-xs'>N</strong>
-                </div>
-                <div className='flex flex-col gap-0.5'>
-                    <strong className='text-xs'>
+            <hr />
+
+            <button
+                className='hover:bg-cream-200 flex items-center gap-2 p-2 text-left rounded-lg'
+                type='button'
+            >
+                <span className='bg-moss-200 rounded-full w-8 h-8 flex items-center justify-center shrink-0'>
+                    <strong className='text-sm'>N</strong>
+                </span>
+
+                <span className='flex flex-col grow min-w-0'>
+                    <span className='text-xs'>
                         {userQuery.data?.first ?? '...'}
-                    </strong>
-                    <p className='text-xs text-taupe-500'>
+                    </span>
+                    <span className='text-[11px] text-taupe-400 overflow-hidden text-ellipsis'>
                         {userQuery.data?.email ?? '...'}
-                    </p>
-                </div>
-                <a href='/settings' className='ml-auto'>
-                    <Icon icon='settings' className='text-taupe-500' />
-                </a>
-            </div>
+                    </span>
+                </span>
+
+                <Icon icon='settings' className='text-taupe-500 shrink-0' />
+            </button>
         </nav>
     );
 }

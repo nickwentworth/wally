@@ -30,7 +30,7 @@ export function ProtectedLayout() {
 
     return (
         <div className='w-dvw h-dvh flex'>
-            <NavBar onAddTransactionClick={txnDialogCtrls.open} />
+            <NavBar />
 
             <div className='bg-cream-50 flex flex-col grow'>
                 <Outlet context={outletContext} />

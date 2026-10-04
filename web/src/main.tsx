@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { ProtectedLayout } from './ProtectedLayout';
 import { Transactions } from './routes/Transactions';
 import { Categories } from './routes/Categories';
-import { Settings } from './routes/Settings';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/trpc';
 import { PublicLayout } from './PublicLayout';
@@ -26,7 +25,6 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                             element={<Transactions />}
                         />
                         <Route path='/categories' element={<Categories />} />
-                        <Route path='/settings' element={<Settings />} />
                     </Route>
 
                     {/* Public routes open to any visitors */}
