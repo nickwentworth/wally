@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-import { Text } from '../common';
+import { Button, Text } from '../common';
 import { DateRangePicker } from '../inputs/DateRangePicker';
-import { TxnTotalCard } from './TxnTotalCard';
 import { TxnTableRow } from './TxnTableRow';
 import { TxnSearchBar } from '../inputs/TxnSearchBar';
 import { DateRange, resolveDateRange } from '../../lib/dates';
 import { useOccurrences } from '../../lib/occurrences';
+import { formatDollar } from '../../lib/transactions';
 
 type TxnTableFilter = {
     range: DateRange;
@@ -34,6 +34,25 @@ export function TxnTable() {
         return <p>Loading...</p>;
     }
 
+    let totalPrefix = '';
+    switch (filters.range) {
+        case 'today':
+            totalPrefix = 'Daily ';
+            break;
+        case 'week':
+            totalPrefix = 'Weekly ';
+            break;
+        case 'month':
+            totalPrefix = 'Monthly ';
+            break;
+        case 'year':
+            totalPrefix = 'Yearly ';
+            break;
+        case 'all':
+            totalPrefix = 'All-Time ';
+            break;
+    }
+
     return (
         <div className='flex flex-col gap-4'>
             <div className='flex gap-4'>
@@ -52,12 +71,32 @@ export function TxnTable() {
                         setFilters({ ...filters, search })
                     }
                 />
+
+                <Button className='shrink-0' variant='primary' left='plus'>
+                    Add transaction
+                </Button>
             </div>
 
             <div className='grid grid-cols-3 gap-4'>
-                <TxnTotalCard label='Net Balance' amount={data.totals.net} />
-                <TxnTotalCard label='Income' amount={data.totals.income} />
-                <TxnTotalCard label='Expenses' amount={data.totals.expenses} />
+                <div className='bg-white border-cream-200 border rounded-lg flex flex-col gap-1 p-4'>
+                    <Text variant='uppercase'>{totalPrefix}Net</Text>
+                    <p className='text-3xl'>{formatDollar(data.totals.net)}</p>
+                </div>
+
+                <div className='bg-white border-cream-200 border col-span-2 rounded-lg grid grid-cols-2'>
+                    <div className='border-cream-200 border-r flex flex-col gap-1 p-4'>
+                        <Text variant='uppercase'>{totalPrefix}Income</Text>
+                        <p className='text-3xl'>
+                            {formatDollar(data.totals.income)}
+                        </p>
+                    </div>
+                    <div className='p-4 flex flex-col gap-1'>
+                        <Text variant='uppercase'>{totalPrefix}Expenses</Text>
+                        <p className='text-3xl'>
+                            {formatDollar(data.totals.expenses)}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             <table className='table-fixed w-full rounded-lg border-cream-200 border'>

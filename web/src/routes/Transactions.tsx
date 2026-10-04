@@ -23,16 +23,9 @@ export function Transactions() {
 
     return (
         <div className='bg-cream-50 flex flex-col grow'>
-            <div className='h-20 border-cream-200 border-b flex items-center px-8'>
-                <h1 className='mr-auto'>Transactions</h1>
-                <Button
-                    variant='primary'
-                    left='plus'
-                    onClick={onAddTransactionClick}
-                >
-                    Add
-                </Button>
-            </div>
+            <h1 className='h-20 border-cream-200 border-b flex items-center px-8'>
+                Transactions
+            </h1>
 
             <div className='px-8 py-6'>
                 {/* TODO: properly handle new user case */}
