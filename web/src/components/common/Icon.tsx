@@ -19,6 +19,7 @@ import {
     Repeat,
     List,
     LayoutGrid,
+    ChevronRight,
 } from 'lucide-react';
 import { CategoryIconName } from '../../lib/categories';
 
@@ -40,7 +41,8 @@ const ICONS = {
     repeat: Repeat,
     list: List,
     grid: LayoutGrid,
-    chevron: ChevronDown,
+    chevron: ChevronDown, // TODO: rename to chevronDown
+    chevronRight: ChevronRight,
     search: Search,
     settings: Settings,
     receipt: Receipt,
