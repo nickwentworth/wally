@@ -1,5 +1,5 @@
 import { Transaction } from '../../lib/transactions';
-import { Text } from '../common';
+import { Table, TableHeader, TableRow, Text } from '../common';
 import { RecurringTransactionRow } from './RecurringTransactionRow';
 
 type RecurringTransactionTableProps = {
@@ -24,20 +24,14 @@ export function RecurringTransactionTable(
                 {label} &bull; {props.transactions.length}
             </Text>
 
-            <table className='rounded-lg border-cream-200 border'>
+            <Table variant='rows'>
                 <thead>
-                    <tr className='bg-cream-100'>
-                        <th className='px-3 py-2'>
-                            <Text variant='uppercase'>Name</Text>
-                        </th>
-                        <th className='px-3 py-2'>
-                            <Text variant='uppercase'>Repeats</Text>
-                        </th>
-                        <th className='px-3 py-2 text-right'>
-                            <Text variant='uppercase'>Amount</Text>
-                        </th>
-                        <th></th>
-                    </tr>
+                    <TableRow>
+                        <TableHeader text='Name' />
+                        <TableHeader text='Repeats' />
+                        <TableHeader align='right' text='Amount' />
+                        <TableHeader />
+                    </TableRow>
                 </thead>
 
                 <tbody>
@@ -48,7 +42,7 @@ export function RecurringTransactionTable(
                         />
                     ))}
                 </tbody>
-            </table>
+            </Table>
         </div>
     );
 }

@@ -1,4 +1,4 @@
-import { Text } from '../common';
+import { Table, TableHeader, TableRow } from '../common';
 import { CategoryRow } from './CategoryRow';
 import { useCategories } from '../../lib/categories';
 
@@ -10,24 +10,21 @@ export function CategoryTable() {
     }
 
     return (
-        <table className='rounded-lg border-cream-200 border overflow-hidden'>
+        <Table variant='rows'>
             <thead>
-                <tr className='bg-cream-100'>
-                    <th className='pl-4 pr-2 py-3 w-0'>
-                        <input type='checkbox' />
-                    </th>
-                    <th></th>
-                    <th>
-                        <Text variant='uppercase'># Total</Text>
-                    </th>
-                </tr>
+                <TableRow>
+                    <TableHeader className='w-0' />
+                    <TableHeader className='w-0' />
+                    <TableHeader text={categories.length + ' total'} />
+                </TableRow>
             </thead>
+
             <tbody>
                 {categories.map((category) => (
                     <CategoryRow category={category} key={category.id} />
                 ))}
                 <CategoryRow />
             </tbody>
-        </table>
+        </Table>
     );
 }

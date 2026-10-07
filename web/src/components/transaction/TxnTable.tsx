@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { Button, Text } from '../common';
+import { Button, Table, TableHeader, TableRow, Text } from '../common';
 import { DateRangePicker } from '../inputs/DateRangePicker';
 import { TxnTableRow } from './TxnTableRow';
 import { TxnSearchBar } from '../inputs/TxnSearchBar';
@@ -99,22 +99,18 @@ export function TxnTable() {
                 </div>
             </div>
 
-            <table className='table-fixed w-full rounded-lg border-cream-200 border'>
+            <Table variant='spreadsheet' fixed>
                 <thead>
-                    <tr className='bg-cream-100'>
-                        <th className='w-35 px-3 py-2 border-cream-200 border-r'>
-                            <Text variant='uppercase'>Date</Text>
-                        </th>
-                        <th className='w-40 px-3 py-2 border-cream-200 border-r'>
-                            <Text variant='uppercase'>Category</Text>
-                        </th>
-                        <th className='w-40 px-3 py-2 border-cream-200 border-r text-right'>
-                            <Text variant='uppercase'>Amount</Text>
-                        </th>
-                        <th className='px-3 py-2'>
-                            <Text variant='uppercase'>Description</Text>
-                        </th>
-                    </tr>
+                    <TableRow>
+                        <TableHeader className='w-35' text='Date' />
+                        <TableHeader className='w-40' text='Category' />
+                        <TableHeader
+                            className='w-40'
+                            text='Amount'
+                            align='right'
+                        />
+                        <TableHeader text='Description' />
+                    </TableRow>
                 </thead>
 
                 <tbody>
@@ -125,7 +121,7 @@ export function TxnTable() {
                         />
                     ))}
                 </tbody>
-            </table>
+            </Table>
         </div>
     );
 }

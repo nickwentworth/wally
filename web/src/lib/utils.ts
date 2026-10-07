@@ -1,10 +1,12 @@
-type ClassValue = string | [boolean, string];
+type ClassValue = string | null | undefined | [boolean, string];
 
 export function buildClass(...values: ClassValue[]) {
     return values
         .map((value) => {
             if (typeof value === 'string') {
                 return value;
+            } else if (value === undefined || value === null) {
+                return null;
             } else {
                 return value[0] ? value[1] : null;
             }

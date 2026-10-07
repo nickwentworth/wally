@@ -2,7 +2,7 @@ import { useCategories } from '../../lib/categories';
 import { formatRecurrenceName } from '../../lib/recurrence';
 import { formatDollar, Transaction } from '../../lib/transactions';
 import { CategoryIcon } from '../category/CategoryIcon';
-import { Icon } from '../common';
+import { Icon, TableCell, TableRow } from '../common';
 
 type RecurringTransactionRowProps = {
     transaction: Transaction;
@@ -20,8 +20,8 @@ export function RecurringTransactionRow(props: RecurringTransactionRowProps) {
     }
 
     return (
-        <tr className='bg-white hover:bg-cream-100 cursor-pointer group'>
-            <td className='border-cream-200 border-t p-3 py-3'>
+        <TableRow className='hover:bg-cream-100 cursor-pointer group'>
+            <TableCell>
                 <div className='flex items-center gap-2'>
                     {category ? (
                         <CategoryIcon variant='category' category={category} />
@@ -38,25 +38,25 @@ export function RecurringTransactionRow(props: RecurringTransactionRowProps) {
                         )}
                     </div>
                 </div>
-            </td>
+            </TableCell>
 
-            <td className='border-cream-200 border-t px-3 py-2'>
+            <TableCell>
                 <div className='flex items-center gap-1.5'>
                     <Icon icon='repeat' />
                     {formatRecurrenceName(props.transaction.recurrence)}
                 </div>
-            </td>
+            </TableCell>
 
-            <td className='border-cream-200 border-t px-3 py-2 text-right'>
+            <TableCell align='right'>
                 {formatDollar(props.transaction.amount)}
-            </td>
+            </TableCell>
 
-            <td className='border-cream-200 border-t px-3 py-2'>
+            <TableCell>
                 <Icon
                     icon='chevronRight'
                     className='invisible group-hover:visible'
                 />
-            </td>
-        </tr>
+            </TableCell>
+        </TableRow>
     );
 }
