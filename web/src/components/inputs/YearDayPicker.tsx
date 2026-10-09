@@ -1,5 +1,3 @@
-import { useController, UseControllerProps } from 'react-hook-form';
-import { TxnFormData } from '../TransactionForm';
 import { useState } from 'react';
 import { Button, Icon, Text } from '../common';
 import {
@@ -9,22 +7,17 @@ import {
 } from '../../lib/recurrence';
 import { Input } from './Input';
 
-export function TxnFormYearDays(
-    props: UseControllerProps<TxnFormData, 'recurrence.daysOfYear'>,
-) {
+type YearDayPickerProps = {
+    value: number[];
+    onChange: (days: number[]) => void;
+};
+
+export function YearDayPicker(props: YearDayPickerProps) {
     const [monthInput, setMonthInput] = useState(0);
     const [dayInput, setDayInput] = useState(1);
 
-    const { field } = useController(props);
-    const { value, onChange } = field;
-
-    if (!value) {
-        return;
-    }
-
-    const onAddBtnClick = () => {
-        if (monthInput === undefined || dayInput === undefined) {
-            console.log;
+    const addDay = () => {
+        if (!dayInput) {
             return;
         }
 
@@ -33,26 +26,24 @@ export function TxnFormYearDays(
             return;
         }
 
-        console.log(month);
-
         const dayOfYear = getDayOfYear(month.month, dayInput);
-        if (!value.includes(dayOfYear)) {
-            onChange([...value, dayOfYear]);
+        if (!props.value.includes(dayOfYear)) {
+            props.onChange([...props.value, dayOfYear]);
         }
     };
 
-    const onRemoveBtnClick = (dayOfYear: number) => {
-        onChange(value.filter((d) => d !== dayOfYear));
+    const removeDay = (dayOfYear: number) => {
+        props.onChange(props.value.filter((d) => d !== dayOfYear));
     };
 
     return (
         <div className='flex flex-col items-start gap-2'>
-            {value.length > 0 && (
+            {props.value.length > 0 && (
                 <div className='flex gap-1 flex-wrap'>
-                    {value.map((dayOfYear) => (
+                    {props.value.map((dayOfYear) => (
                         <button
                             className='bg-cream-200 hover:bg-cream-300 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm mr-1'
-                            onClick={() => onRemoveBtnClick(dayOfYear)}
+                            onClick={() => removeDay(dayOfYear)}
                             type='button'
                             key={dayOfYear}
                         >
@@ -91,7 +82,7 @@ export function TxnFormYearDays(
                         max={31}
                     />
                 </div>
-                <Button variant='primary' onClick={onAddBtnClick}>
+                <Button variant='primary' onClick={addDay}>
                     <Icon icon='plus' />
                 </Button>
             </div>

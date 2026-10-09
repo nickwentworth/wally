@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '../components/common';
 import { Tab, Tabs } from '../components/common/Tabs';
 import { TxnTable } from '../components/transaction/TxnTable';
-import { useProtectedLayoutContext } from '../ProtectedLayout';
 import { RecurringTransactionGrid } from '../components/transaction/RecurringTransactionGrid';
 
 const TXN_TABS = {
@@ -13,7 +12,6 @@ const TXN_TABS = {
 type TxnTab = keyof typeof TXN_TABS;
 
 export function Transactions() {
-    const { onAddTransactionClick } = useProtectedLayoutContext();
     const [tab, setTab] = useState<TxnTab>('transactions');
 
     const tabs = {
@@ -38,11 +36,7 @@ export function Transactions() {
                         <p className='text-taupe-500'>
                             Basically a spreadshet. A really good one though.
                         </p>
-                        <Button
-                            variant='primary'
-                            left='plus'
-                            onClick={onAddTransactionClick}
-                        >
+                        <Button variant='primary' left='plus'>
                             Add Transaction
                         </Button>
                     </div>

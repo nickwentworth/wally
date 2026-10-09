@@ -1,45 +1,39 @@
-import { useController, UseControllerProps } from 'react-hook-form';
-import { TxnFormData } from '../TransactionForm';
 import { useState } from 'react';
 import { ordinalSuffix } from '../../lib/utils';
 import { Button, Icon, Text } from '../common';
 import { Input } from './Input';
 
-export function TxnFormMonthDays(
-    props: UseControllerProps<TxnFormData, 'recurrence.daysOfMonth'>,
-) {
+type MonthDayPickerProps = {
+    value: number[];
+    onChange: (days: number[]) => void;
+};
+
+export function MonthDayPicker(props: MonthDayPickerProps) {
     const [dayInput, setDayInput] = useState(1);
 
-    const { field } = useController(props);
-    const { value, onChange } = field;
-
-    if (!value) {
-        return;
-    }
-
-    const onAddBtnClick = () => {
+    const addDay = () => {
         if (!dayInput) {
             return;
         }
 
-        if (!value.includes(dayInput)) {
-            onChange([...value, dayInput]);
+        if (!props.value.includes(dayInput)) {
+            props.onChange([...props.value, dayInput]);
         }
     };
 
-    const onRemoveBtnClick = (day: number) => {
-        onChange(value.filter((d) => d !== day));
+    const removeDay = (day: number) => {
+        props.onChange(props.value.filter((d) => d !== day));
     };
 
     return (
         <div className='flex flex-col items-start gap-2'>
-            {value.length > 0 && (
+            {props.value.length > 0 && (
                 <div>
                     On the{' '}
-                    {value.map((day) => (
+                    {props.value.map((day) => (
                         <button
                             className='bg-cream-200 hover:bg-cream-300 inline-flex items-center gap-1 px-1 py-0.5 rounded-sm mr-1'
-                            onClick={() => onRemoveBtnClick(day)}
+                            onClick={() => removeDay(day)}
                             type='button'
                             key={day}
                         >
@@ -48,7 +42,7 @@ export function TxnFormMonthDays(
                             <Icon icon='close' />
                         </button>
                     ))}
-                    day{value.length > 1 && 's'} of the month
+                    day{props.value.length > 1 && 's'} of the month
                 </div>
             )}
 
@@ -68,7 +62,7 @@ export function TxnFormMonthDays(
                     />
                 </div>
 
-                <Button variant='primary' onClick={onAddBtnClick}>
+                <Button variant='primary' onClick={addDay}>
                     <Icon icon='plus' />
                 </Button>
             </div>

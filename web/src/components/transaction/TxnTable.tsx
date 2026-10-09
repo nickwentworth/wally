@@ -1,12 +1,21 @@
 import { useState } from 'react';
 
-import { Button, Table, TableHeader, TableRow, Text } from '../common';
+import {
+    Button,
+    Dialog,
+    Table,
+    TableHeader,
+    TableRow,
+    Text,
+    useDialog,
+} from '../common';
 import { DateRangePicker } from '../inputs/DateRangePicker';
 import { TxnTableRow } from './TxnTableRow';
 import { TxnSearchBar } from '../inputs/TxnSearchBar';
 import { DateRange, resolveDateRange } from '../../lib/dates';
 import { useOccurrences } from '../../lib/occurrences';
 import { formatDollar } from '../../lib/transactions';
+import { TransactionForm } from './TransactionForm';
 
 type TxnTableFilter = {
     range: DateRange;
@@ -15,6 +24,8 @@ type TxnTableFilter = {
 };
 
 export function TxnTable() {
+    const txnDialogCtrls = useDialog();
+
     const [filters, setFilters] = useState<TxnTableFilter>({
         range: 'year',
         categoryIds: [],
@@ -72,7 +83,12 @@ export function TxnTable() {
                     }
                 />
 
-                <Button className='shrink-0' variant='primary' left='plus'>
+                <Button
+                    className='shrink-0'
+                    variant='primary'
+                    left='plus'
+                    onClick={txnDialogCtrls.open}
+                >
                     Add transaction
                 </Button>
             </div>
@@ -122,6 +138,13 @@ export function TxnTable() {
                     ))}
                 </tbody>
             </Table>
+
+            <Dialog controls={txnDialogCtrls} placement='right'>
+                <TransactionForm
+                    onClose={txnDialogCtrls.close}
+                    onSubmit={txnDialogCtrls.close}
+                />
+            </Dialog>
         </div>
     );
 }
