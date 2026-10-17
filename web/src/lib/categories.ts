@@ -1,11 +1,20 @@
-import { ApiRouterOutputs, trpc } from './trpc';
 import { CategoryFormColor } from '../components/category/CategoryForm';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { apiClient, ApiInput } from './api';
 
 // -------------------- Hooks -------------------- //
 
+const categoryKey = ['category'];
+
 export function useCategories() {
-    return useQuery(trpc.category.all.queryOptions());
+    return useQuery({
+        queryFn: async () => {
+            const query = await apiClient.GET('/category/all');
+            if (!query.response.ok) throw query.error;
+            return query.data as any; // TODO: use proper type
+        },
+        queryKey: categoryKey,
+    });
 }
 
 type UseCategorySaveOpts = {
@@ -14,16 +23,14 @@ type UseCategorySaveOpts = {
 
 export function useCategorySave(opts: UseCategorySaveOpts) {
     const qc = useQueryClient();
-    return useMutation(
-        trpc.category.save.mutationOptions({
-            onSuccess: () => {
-                qc.invalidateQueries({
-                    queryKey: trpc.category.all.queryKey(),
-                });
-                opts.onSuccess?.();
-            },
-        }),
-    );
+    return useMutation({
+        mutationFn: (category: ApiInput<'/category/save', 'post'>) =>
+            apiClient.POST('/category/save', { body: category }),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: categoryKey });
+            opts.onSuccess?.();
+        },
+    });
 }
 
 type UseCategoryDeleteOpts = {
@@ -32,22 +39,20 @@ type UseCategoryDeleteOpts = {
 
 export function useCategoryDelete(opts: UseCategoryDeleteOpts) {
     const qc = useQueryClient();
-    return useMutation(
-        trpc.category.delete.mutationOptions({
-            onSuccess: () => {
-                qc.invalidateQueries({
-                    queryKey: trpc.category.all.queryKey(),
-                });
-                opts.onSuccess?.();
-            },
-        }),
-    );
+    return useMutation({
+        mutationFn: (category: ApiInput<'/category/delete', 'post'>) =>
+            apiClient.POST('/category/delete', { body: category }),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: categoryKey });
+            opts.onSuccess?.();
+        },
+    });
 }
 
 // -------------------- Types / Constants -------------------- //
 
-export type Category = ApiRouterOutputs['category']['all'][number];
-export type CategoryIconName = Category['icon'];
+export type Category = any; // TODO: ApiOutput<'/category/all', 'get'>[number];
+export type CategoryIconName = any; // TODO: Category['icon'];
 
 export const CATEGORY_COLORS = [
     { bg: '#FBD4D9', fg: '#8A1F31' },
@@ -66,6 +71,15 @@ export const CATEGORY_COLORS = [
     { bg: '#ECD1DB', fg: '#6B1A41' },
     { bg: '#DDD7C8', fg: '#4F4628' },
 ] satisfies CategoryFormColor[];
+
+export const CATEGORY_ICONS = [
+    'shoppping',
+    'gift',
+    'utensils',
+    'car',
+    'house',
+    'briefcase',
+] as const;
 
 export function tryGetCategoryColor(category?: Category) {
     return CATEGORY_COLORS.find(

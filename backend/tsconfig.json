@@ -7,6 +7,7 @@
         "rootDir": "src",
         "outDir": "dist",
         "strict": true,
+        "types": ["node"],
         // TODO: added to compile with drizzle-orm but don't love it, try to fix later
         "skipLibCheck": true
     },

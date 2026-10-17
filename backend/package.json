@@ -5,10 +5,13 @@
     "main": "index.js",
     "scripts": {
         "start": "tsc && node --env-file=.env ./dist/index.js",
-        "gen": "drizzle-kit push"
+        "gen": "drizzle-kit push",
+        "gen:api": "tsc && node ./dist/scripts/openapi.js"
     },
     "dependencies": {
-        "@trpc/server": "^11.17.0",
+        "@orpc/openapi": "^1.15.6",
+        "@orpc/server": "^1.15.6",
+        "@orpc/zod": "^1.15.6",
         "cookie": "^0.7.2",
         "cors": "^2.8.6",
         "drizzle-orm": "^0.45.2",
@@ -22,6 +25,8 @@
         "@types/cors": "^2.8.19",
         "@types/express": "^5.0.6",
         "@types/luxon": "^3.7.1",
-        "drizzle-kit": "^0.31.10"
+        "@types/node": "^26.6.5",
+        "drizzle-kit": "^0.31.10",
+        "typescript": "^7.0.2"
     }
 }

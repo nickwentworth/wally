@@ -1,26 +1,29 @@
-import { protectedProcedure, router } from '../trpc.js';
 import {
     TransactionCreate,
     TransactionList,
     TransactionUpdate,
 } from '../../services/transaction.js';
+import { ApiRouter, authedProcedure } from '../orpc.js';
 
-export const transactionRouter = router({
-    list: protectedProcedure
+export const transactionRouter = {
+    list: authedProcedure
         .input(TransactionList)
-        .query(async ({ ctx, input }) => {
-            return await ctx.services.transaction.list(input, ctx.user.id);
+        .handler(async ({ context, input }) => {
+            return await context.services.transaction.list(
+                input,
+                context.user.id,
+            );
         }),
 
-    create: protectedProcedure
+    create: authedProcedure
         .input(TransactionCreate)
-        .mutation(async ({ ctx, input }) => {
-            await ctx.services.transaction.create(input, ctx.user.id);
+        .handler(async ({ context, input }) => {
+            await context.services.transaction.create(input, context.user.id);
         }),
 
-    update: protectedProcedure
+    update: authedProcedure
         .input(TransactionUpdate)
-        .mutation(async ({ ctx, input }) => {
-            await ctx.services.transaction.update(input, ctx.user.id);
+        .handler(async ({ context, input }) => {
+            await context.services.transaction.update(input, context.user.id);
         }),
-});
+} satisfies ApiRouter;

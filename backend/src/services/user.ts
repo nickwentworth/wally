@@ -3,6 +3,9 @@ import { users } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { GoogleUserProfile } from '../auth/google.js';
 
+// TODO: probably better to type directly, and have routes below return it explicitly
+export type User = NonNullable<Awaited<ReturnType<UserService['getByEmail']>>>;
+
 export class UserService {
     private db: MySql2Database;
 

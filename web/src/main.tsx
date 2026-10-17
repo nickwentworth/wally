@@ -4,10 +4,11 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { ProtectedLayout } from './ProtectedLayout';
 import { Transactions } from './routes/Transactions';
 import { Categories } from './routes/Categories';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './lib/trpc';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PublicLayout } from './PublicLayout';
 import { Login } from './routes/Login';
+
+export const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

@@ -1,13 +1,13 @@
 import { OccurrenceList } from '../../services/transaction.js';
-import { protectedProcedure, router } from '../trpc.js';
+import { ApiRouter, authedProcedure } from '../orpc.js';
 
-export const occurrenceRouter = router({
-    list: protectedProcedure
+export const occurrenceRouter = {
+    list: authedProcedure
         .input(OccurrenceList)
-        .query(async ({ ctx, input }) => {
-            return await ctx.services.transaction.listOccurrences(
+        .handler(async ({ context, input }) => {
+            return await context.services.transaction.listOccurrences(
                 input,
-                ctx.user.id,
+                context.user.id,
             );
         }),
-});
+} satisfies ApiRouter;

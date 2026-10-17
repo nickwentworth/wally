@@ -8,8 +8,8 @@ import {
     TransactionFormEntryData,
 } from './TransactionFormEntry';
 import { useLens } from '@hookform/lenses';
-import { ApiRouterInputs } from 'backend/src/api/router';
 import { TransactionFormRecurrenceData } from './TransactionFormRecurrence';
+import { ApiInput } from '../../lib/api';
 
 const EMPTY_TRANSACTION_FORM_ENTRY = {
     amount: 0,
@@ -28,7 +28,7 @@ const EMPTY_TRANSACTION_FORM_ENTRY = {
 
 function txnFormRecurToCreate(
     r: TransactionFormRecurrenceData,
-): NonNullable<ApiRouterInputs['transaction']['create']['recurrence']> {
+): NonNullable<ApiInput<'/transaction/create', 'post'>['recurrence']> {
     const rate = Number(r.rate);
 
     switch (r.period) {

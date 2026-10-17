@@ -2,9 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
-import { buildApiHandler } from './api/router.js';
 import { buildAuthRouter } from './auth/router.js';
-import { UserService } from './services/user.js';
+import { User, UserService } from './services/user.js';
 import { SessionService } from './services/session.js';
 import {
     CategoryService,
@@ -12,6 +11,9 @@ import {
     TransactionService,
 } from './services/index.js';
 import { Settings } from 'luxon';
+import { parse } from 'cookie';
+import { OpenAPIHandler } from '@orpc/openapi/node';
+import { apiRouter } from './api/router.js';
 
 Settings.defaultZone = 'utc';
 
@@ -35,7 +37,29 @@ const services = {
     category: new CategoryService(db),
 } satisfies Services;
 
-server.use('/api', buildApiHandler(services));
+const apiHandler = new OpenAPIHandler(apiRouter);
+
+server.use('/api', async (req, res, next) => {
+    const cookies = parse(req.headers.cookie ?? '');
+    const sessionToken = cookies[SessionService.SESSION_COOKIE] ?? '';
+
+    let user: User | null = null;
+
+    const session = await services.session.validateSession(sessionToken);
+    if (session) {
+        user = await services.user.getById(session.userId);
+    }
+
+    const { matched } = await apiHandler.handle(req, res, {
+        prefix: '/api',
+        context: { user, services },
+    });
+
+    if (!matched) {
+        next();
+    }
+});
+
 server.use('/auth', buildAuthRouter(services));
 
 // TODO: fetch port from config

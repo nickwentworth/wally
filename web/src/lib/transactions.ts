@@ -1,10 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ApiRouterInputs, ApiRouterOutputs, trpc } from './trpc';
+import { apiClient, ApiInput } from './api';
+import { occurrenceKey } from './occurrences';
 
 // -------------------- Hooks -------------------- //
 
-export function useTransactions(opts: ApiRouterInputs['transaction']['list']) {
-    return useQuery(trpc.transaction.list.queryOptions(opts));
+const transactionKey = ['transaction'];
+
+export function useTransactions(opts: ApiInput<'/transaction/list', 'post'>) {
+    return useQuery({
+        queryFn: async () => {
+            const query = await apiClient.POST('/transaction/list', {
+                body: opts,
+            });
+            if (!query.response.ok) throw query.error;
+            return query.data as any; // TODO: use proper type
+        },
+        queryKey: [...transactionKey, 'list', opts],
+    });
 }
 
 type UseTxnCreateOpts = {
@@ -14,39 +26,33 @@ type UseTxnCreateOpts = {
 export function useTransactionCreate(opts: UseTxnCreateOpts) {
     const qc = useQueryClient();
 
-    return useMutation(
-        trpc.transaction.create.mutationOptions({
-            onSuccess: () => {
-                qc.invalidateQueries({
-                    queryKey: trpc.occurrence.list.queryKey(),
-                });
-                opts.onSuccess?.();
-            },
-        }),
-    );
+    return useMutation({
+        mutationFn: (transaction: ApiInput<'/transaction/create', 'post'>) =>
+            apiClient.POST('/transaction/create', { body: transaction }),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: transactionKey });
+            qc.invalidateQueries({ queryKey: occurrenceKey });
+            opts.onSuccess?.();
+        },
+    });
 }
 
 export function useTransactionUpdate() {
     const qc = useQueryClient();
 
-    return useMutation(
-        trpc.transaction.update.mutationOptions({
-            onSuccess: () => {
-                // TODO: can these be combined?
-                qc.invalidateQueries({
-                    queryKey: trpc.transaction.list.queryKey(),
-                });
-                qc.invalidateQueries({
-                    queryKey: trpc.occurrence.list.queryKey(),
-                });
-            },
-        }),
-    );
+    return useMutation({
+        mutationFn: (transaction: ApiInput<'/transaction/update', 'post'>) =>
+            apiClient.POST('/transaction/update', { body: transaction }),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: transactionKey });
+            qc.invalidateQueries({ queryKey: occurrenceKey });
+        },
+    });
 }
 
 /* -------------------- Types / Constants -------------------- */
 
-export type Transaction = ApiRouterOutputs['transaction']['list'][number];
+export type Transaction = any; // TODO: ApiOutput<'/transaction/list', 'post'>[number];
 
 // -------------------- Helpers -------------------- //
 

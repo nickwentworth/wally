@@ -1,20 +1,30 @@
 import { CategoryDelete, CategorySave } from '../../services/category.js';
-import { protectedProcedure, router } from '../trpc.js';
+import { ApiRouter, authedProcedure } from '../orpc.js';
 
-export const categoryRouter = router({
-    all: protectedProcedure.query(async ({ ctx }) => {
-        return await ctx.services.category.getAllCategories(ctx.user.id);
-    }),
+export const categoryRouter = {
+    all: authedProcedure
+        .route({ method: 'GET' })
+        .handler(async ({ context }) => {
+            return await context.services.category.getAllCategories(
+                context.user.id,
+            );
+        }),
 
-    save: protectedProcedure
+    save: authedProcedure
         .input(CategorySave)
-        .mutation(async ({ ctx, input }) => {
-            await ctx.services.category.saveCategory(input, ctx.user.id);
+        .handler(async ({ context, input }) => {
+            await context.services.category.saveCategory(
+                input,
+                context.user.id,
+            );
         }),
 
-    delete: protectedProcedure
+    delete: authedProcedure
         .input(CategoryDelete)
-        .mutation(async ({ ctx, input }) => {
-            await ctx.services.category.deleteCategory(input.id, ctx.user.id);
+        .handler(async ({ context, input }) => {
+            await context.services.category.deleteCategory(
+                input.id,
+                context.user.id,
+            );
         }),
-});
+} satisfies ApiRouter;

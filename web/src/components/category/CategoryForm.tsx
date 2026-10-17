@@ -1,11 +1,11 @@
 import { Button, Text } from '../common';
 import { CategoryIcon } from './CategoryIcon';
-import { CATEGORY_ICONS } from 'backend/src/services/category';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 import {
     Category,
     CATEGORY_COLORS,
+    CATEGORY_ICONS,
     tryGetCategoryColor,
     useCategoryDelete,
     useCategorySave,

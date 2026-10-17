@@ -1,5 +1,7 @@
-import { publicProcedure, router } from '../trpc.js';
+import { ApiRouter, publicProcedure } from '../orpc.js';
 
-export const userRouter = router({
-    me: publicProcedure.query(({ ctx }) => ctx.user),
-});
+export const userRouter = {
+    me: publicProcedure
+        .route({ method: 'GET' })
+        .handler(({ context }) => context.user),
+} satisfies ApiRouter;
