@@ -1,101 +1,53 @@
-import { Request, Response, Router } from 'express';
-import { randomBytes } from 'crypto';
-import { parse } from 'cookie';
 import z from 'zod';
-import { UserService } from './user.service.js';
-import { SessionService } from './session.service.js';
 
-const googleUserProfileSchema = z.object({
+const GoogleUserProfile = z.object({
     id: z.string(),
     email: z.string(),
     given_name: z.string(),
     family_name: z.string(),
     picture: z.string(),
 });
-
-export type GoogleUserProfile = z.infer<typeof googleUserProfileSchema>;
+export type GoogleUserProfile = z.infer<typeof GoogleUserProfile>;
 
 const OAUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const USER_URL = 'https://www.googleapis.com/oauth2/v1/userinfo';
 
 export class GoogleAuth {
-    private client_id: string;
-    private client_secret: string;
-    private redirect_uri: URL;
-    private userService: UserService;
-    private sessionService: SessionService;
+    private clientId: string;
+    private clientSecret: string;
+    private redirectUri: URL;
 
-    constructor(
-        client_id: string,
-        client_secret: string,
-        redirect_uri: URL,
-        userService: UserService,
-        sessionService: SessionService,
-    ) {
-        this.client_id = client_id;
-        this.client_secret = client_secret;
-        this.redirect_uri = redirect_uri;
-        this.userService = userService;
-        this.sessionService = sessionService;
+    constructor(clientId: string, clientSecret: string, redirectUri: URL) {
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+        this.redirectUri = redirectUri;
     }
 
-    public buildRouter() {
-        return Router()
-            .get('/', (req, res) => this.login(req, res))
-            .get('/callback', (req, res) => this.callback(req, res));
-    }
-
-    private login(req: Request, res: Response) {
-        const state = randomBytes(32).toString('hex');
-
+    buildAuthUrl(state: string): string {
         const params = new URLSearchParams({
-            client_id: this.client_id,
-            redirect_uri: 'http://localhost:8000/auth/google/callback',
+            client_id: this.clientId,
+            redirect_uri: this.redirectUri.href,
             response_type: 'code',
             scope: 'profile email',
             state: state,
         });
-        const url = OAUTH_URL + '?' + params.toString();
 
-        res.cookie('state', state, { maxAge: 5 * 60 * 1000 });
-
-        const redirect = req.query.redirect?.toString();
-        if (redirect) {
-            res.cookie('redirect', redirect, { maxAge: 5 * 60 * 1000 });
-        }
-
-        res.redirect(url);
+        return `${OAUTH_URL}?${params.toString()}`;
     }
 
-    private async callback(req: Request, res: Response) {
-        const cookies = parse(req.headers.cookie ?? '');
-
-        const stateParam = req.query.state?.toString();
-        const stateCookie = cookies['state'];
-        if (!stateParam || !stateCookie || stateParam !== stateCookie) {
-            return res.status(400);
-        }
-
-        const code = req.query.code?.toString();
-        if (!code) {
-            return res.status(400);
-        }
-
+    async fetchUserProfile(code: string) {
         const accessToken = await this.fetchAccessToken(code);
-        const userProfile = await this.fetchUserProfile(accessToken);
 
-        const user = await this.userService.getOrCreateFromGoogle(userProfile);
-        const sessionSecret = await this.sessionService.createSession(user.id);
+        const res = await fetch(USER_URL, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
 
-        res.cookie(SessionService.SESSION_COOKIE, sessionSecret);
-
-        const redirect = cookies['redirect'];
-        if (redirect) {
-            res.redirect(redirect);
-        } else {
-            res.json(userProfile);
-        }
+        const json = await res.json();
+        return GoogleUserProfile.parse(json);
     }
 
     private async fetchAccessToken(code: string) {
@@ -105,11 +57,11 @@ export class GoogleAuth {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
-                client_id: this.client_id,
-                client_secret: this.client_secret,
+                client_id: this.clientId,
+                client_secret: this.clientSecret,
                 code: code,
                 grant_type: 'authorization_code',
-                redirect_uri: this.redirect_uri.href,
+                redirect_uri: this.redirectUri.href,
             }).toString(),
         });
 
@@ -123,17 +75,5 @@ export class GoogleAuth {
                 'Returned JSON is missing access_token key: ' + json,
             );
         }
-    }
-
-    private async fetchUserProfile(token: string) {
-        const res = await fetch(USER_URL, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        const json = await res.json();
-        return googleUserProfileSchema.parse(json);
     }
 }
