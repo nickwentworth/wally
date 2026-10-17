@@ -1,6 +1,6 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import z from 'zod';
-import { categories } from '../db/schema.js';
+import { categories } from '../../db/schema.js';
 import { and, eq } from 'drizzle-orm';
 
 // -------------------- Schemas/Types -------------------- //

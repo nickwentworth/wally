@@ -1,7 +1,7 @@
-import { userRouter } from './routers/user.js';
-import { categoryRouter } from './routers/category.js';
-import { transactionRouter } from './routers/transaction.js';
-import { occurrenceRouter } from './routers/occurrence.js';
+import { userRouter } from '../features/auth/user.routes.js';
+import { categoryRouter } from '../features/category/category.routes.js';
+import { transactionRouter } from '../features/transaction/transaction.routes.js';
+import { occurrenceRouter } from '../features/transaction/occurrence.routes.js';
 import { apiBase } from './orpc.js';
 
 export const apiRouter = apiBase.router({

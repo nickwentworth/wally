@@ -1,9 +1,9 @@
+import { ApiRouter, authedProcedure } from '../../api/orpc.js';
 import {
     TransactionCreate,
     TransactionList,
     TransactionUpdate,
-} from '../../services/transaction.js';
-import { ApiRouter, authedProcedure } from '../orpc.js';
+} from './transaction.service.js';
 
 export const transactionRouter = {
     list: authedProcedure

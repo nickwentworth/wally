@@ -1,5 +1,5 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import { transactions } from '../db/schema.js';
+import { transactions } from '../../db/schema.js';
 import z from 'zod';
 import {
     and,
@@ -13,7 +13,7 @@ import {
     or,
 } from 'drizzle-orm';
 import { DateTime } from 'luxon';
-import { LuxonDateTime } from '../util/types.js';
+import { LuxonDateTime } from '../../util/types.js';
 import {
     deserializeRecurrence,
     extrapolateRecurrence,

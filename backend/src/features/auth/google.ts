@@ -2,7 +2,8 @@ import { Request, Response, Router } from 'express';
 import { randomBytes } from 'crypto';
 import { parse } from 'cookie';
 import z from 'zod';
-import { UserService, SessionService } from '../services/index.js';
+import { UserService } from './user.service.js';
+import { SessionService } from './session.service.js';
 
 const googleUserProfileSchema = z.object({
     id: z.string(),

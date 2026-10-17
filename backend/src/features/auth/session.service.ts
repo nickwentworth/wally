@@ -1,7 +1,7 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import { sessions } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
+import { sessions } from '../../db/schema.js';
 
 export class SessionService {
     private db: MySql2Database;

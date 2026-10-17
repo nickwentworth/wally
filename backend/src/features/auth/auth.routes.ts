@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { GoogleAuth } from './google.js';
-import { Services } from '../services/index.js';
+import { Services } from '../../api/orpc.js';
 
 export function buildAuthRouter(services: Services) {
     const authRouter = Router();

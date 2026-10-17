@@ -2,14 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
-import { buildAuthRouter } from './auth/router.js';
-import { User, UserService } from './services/user.js';
-import { SessionService } from './services/session.js';
-import {
-    CategoryService,
-    Services,
-    TransactionService,
-} from './services/index.js';
+import { buildAuthRouter } from './features/auth/auth.routes.js';
+import { User, UserService } from './features/auth/user.service.js';
+import { SessionService } from './features/auth/session.service.js';
+import { TransactionService } from './features/transaction/transaction.service.js';
+import { CategoryService } from './features/category/category.service.js';
+import { Services } from './api/orpc.js';
 import { Settings } from 'luxon';
 import { parse } from 'cookie';
 import { OpenAPIHandler } from '@orpc/openapi/node';

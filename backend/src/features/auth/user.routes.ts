@@ -1,4 +1,4 @@
-import { ApiRouter, publicProcedure } from '../orpc.js';
+import { ApiRouter, publicProcedure } from '../../api/orpc.js';
 
 export const userRouter = {
     me: publicProcedure

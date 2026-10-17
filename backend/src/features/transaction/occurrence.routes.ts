@@ -1,5 +1,5 @@
-import { OccurrenceList } from '../../services/transaction.js';
-import { ApiRouter, authedProcedure } from '../orpc.js';
+import { ApiRouter, authedProcedure } from '../../api/orpc.js';
+import { OccurrenceList } from './transaction.service.js';
 
 export const occurrenceRouter = {
     list: authedProcedure

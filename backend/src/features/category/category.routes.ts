@@ -1,5 +1,5 @@
-import { CategoryDelete, CategorySave } from '../../services/category.js';
-import { ApiRouter, authedProcedure } from '../orpc.js';
+import { ApiRouter, authedProcedure } from '../../api/orpc.js';
+import { CategoryDelete, CategorySave } from './category.service.js';
 
 export const categoryRouter = {
     all: authedProcedure
