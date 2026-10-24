@@ -36,7 +36,7 @@ export class GoogleAuth {
         return `${OAUTH_URL}?${params.toString()}`;
     }
 
-    async fetchUserProfile(code: string) {
+    async fetchUserProfile(code: string): Promise<GoogleUserProfile> {
         const accessToken = await this.fetchAccessToken(code);
 
         const res = await fetch(USER_URL, {

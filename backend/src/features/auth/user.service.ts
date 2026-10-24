@@ -2,9 +2,7 @@ import { MySql2Database } from 'drizzle-orm/mysql2';
 import { users } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { GoogleUserProfile } from './google.js';
-
-// TODO: probably better to type directly, and have routes below return it explicitly
-export type User = NonNullable<Awaited<ReturnType<UserService['getByEmail']>>>;
+import { User } from './user.schema.js';
 
 export class UserService {
     private db: MySql2Database;
@@ -13,7 +11,7 @@ export class UserService {
         this.db = db;
     }
 
-    async getById(id: number) {
+    async getById(id: number): Promise<User | null> {
         return await this.db
             .select()
             .from(users)
@@ -21,7 +19,7 @@ export class UserService {
             .then((rs) => (rs.length > 0 ? rs[0] : null));
     }
 
-    async getByEmail(email: string) {
+    async getByEmail(email: string): Promise<User | null> {
         return await this.db
             .select()
             .from(users)
@@ -29,7 +27,7 @@ export class UserService {
             .then((rs) => (rs.length > 0 ? rs[0] : null));
     }
 
-    async getOrCreateFromGoogle(profile: GoogleUserProfile) {
+    async getOrCreateFromGoogle(profile: GoogleUserProfile): Promise<User> {
         const existingUser = await this.getByEmail(profile.email);
         if (existingUser) {
             return existingUser;
@@ -46,6 +44,6 @@ export class UserService {
             .$returningId()
             .then((ids) => ids[0].id);
 
-        return await this.getById(userId).then((u) => u!);
+        return (await this.getById(userId))!;
     }
 }

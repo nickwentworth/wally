@@ -14,7 +14,7 @@ export class SessionService {
         this.db = db;
     }
 
-    async createSession(userId: number) {
+    async createSession(userId: number): Promise<string> {
         const token = randomBytes(24).toString('base64');
 
         await this.db.insert(sessions).values({
@@ -25,6 +25,7 @@ export class SessionService {
         return token;
     }
 
+    // TODO: type this function's return
     async validateSession(token: string) {
         if (!token) {
             return null;

@@ -1,16 +1,15 @@
 import z from 'zod';
-import { LuxonDateTime } from '../../util/types.js';
+import { DistributiveOmit } from '../../util/types.js';
 import { DateTime } from 'luxon';
 
 /* ———————————————————— Types/Schema ———————————————————— */
 
 const RecurrenceBase = z.object({
     rate: z.number(),
-    endsAt: LuxonDateTime.optional(),
+    endsAt: z.string().optional(),
 });
-type RecurrenceBase = z.infer<typeof RecurrenceBase>;
 
-export const Recurrence = z.discriminatedUnion('period', [
+export const RecurrenceJson = z.discriminatedUnion('period', [
     RecurrenceBase.extend({
         period: z.literal('daily'),
     }),
@@ -27,11 +26,29 @@ export const Recurrence = z.discriminatedUnion('period', [
         daysOfYear: z.int().min(1).max(366).array().nonempty(),
     }),
 ]);
-export type Recurrence = z.infer<typeof Recurrence>;
+export type RecurrenceJson = z.infer<typeof RecurrenceJson>;
+
+export type Recurrence = DistributiveOmit<RecurrenceJson, 'endsAt'> & {
+    endsAt?: DateTime;
+};
 
 /* ———————————————————— Helpers ———————————————————— */
 
-export function serializeRecurrence(r: Recurrence) {
+export function recurrenceToJson(r: Recurrence): RecurrenceJson {
+    return {
+        ...r,
+        endsAt: r.endsAt?.toISODate() ?? undefined,
+    };
+}
+
+export function recurrenceFromJson(r: RecurrenceJson): Recurrence {
+    return {
+        ...r,
+        endsAt: r.endsAt ? DateTime.fromISO(r.endsAt) : undefined,
+    };
+}
+
+export function recurrenceToDb(r: Recurrence): string {
     switch (r.period) {
         case 'daily':
             return [r.rate, 'D'].join(';');
@@ -44,7 +61,7 @@ export function serializeRecurrence(r: Recurrence) {
     }
 }
 
-export function deserializeRecurrence(data: string, endsAt?: Date): Recurrence {
+export function recurrenceFromDb(data: string, endsAt?: Date): Recurrence {
     const parts = data.split(';');
 
     const rate = Number.parseInt(parts[0]);
@@ -54,7 +71,7 @@ export function deserializeRecurrence(data: string, endsAt?: Date): Recurrence {
     const base = {
         rate: rate,
         endsAt: endsAt ? DateTime.fromJSDate(endsAt) : undefined,
-    } satisfies RecurrenceBase;
+    };
 
     const splitDays = () => days.split(',').map((d) => Number.parseInt(d));
 

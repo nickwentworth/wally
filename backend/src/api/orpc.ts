@@ -1,5 +1,6 @@
 import { ORPCError, os, Router } from '@orpc/server';
-import { User, UserService } from '../features/auth/user.service.js';
+import { UserService } from '../features/auth/user.service.js';
+import { User } from '../features/auth/user.schema.js';
 import { SessionService } from '../features/auth/session.service.js';
 import { TransactionService } from '../features/transaction/transaction.service.js';
 import { CategoryService } from '../features/category/category.service.js';

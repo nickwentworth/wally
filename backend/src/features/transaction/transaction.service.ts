@@ -1,6 +1,5 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
 import { transactions } from '../../db/schema.js';
-import z from 'zod';
 import {
     and,
     eq,
@@ -13,52 +12,22 @@ import {
     or,
 } from 'drizzle-orm';
 import { DateTime } from 'luxon';
-import { LuxonDateTime } from '../../util/types.js';
 import {
-    deserializeRecurrence,
     extrapolateRecurrence,
-    Recurrence,
-    serializeRecurrence,
+    recurrenceFromDb,
+    recurrenceToDb,
 } from './recurrence.js';
-
-// -------------------- Schemas/Types -------------------- //
-
-export const TransactionList = z.object({
-    recurringOnly: z.boolean().default(false),
-});
-type TransactionList = z.infer<typeof TransactionList>;
-
-export const OccurrenceList = z.object({
-    from: LuxonDateTime,
-    to: LuxonDateTime,
-    categoryIds: z.number().array().optional(),
-    search: z.string().optional(),
-    offset: z.int().min(0).default(0),
-    limit: z.int().min(1).max(100).default(50),
-});
-type OccurrenceList = z.infer<typeof OccurrenceList>;
-
-export const TransactionCreate = z.object({
-    amount: z.number(),
-    categoryId: z.int().optional(),
-    date: LuxonDateTime,
-    description: z.string().optional(),
-    recurrence: Recurrence.optional(),
-});
-type TransactionCreate = z.infer<typeof TransactionCreate>;
-
-export const TransactionUpdate = z.object({
-    id: z.int(),
-    amount: z.number().optional(),
-    categoryId: z.int().nullable().optional(),
-    date: LuxonDateTime.optional(),
-    description: z.string().optional(),
-});
-type TransactionUpdate = z.infer<typeof TransactionUpdate>;
-
-type Transaction = ReturnType<typeof deserializeTransaction>;
-
-// -------------------- Service -------------------- //
+import {
+    Transaction,
+    TransactionCreate,
+    TransactionList,
+    TransactionUpdate,
+} from './transaction.schema.js';
+import {
+    OccurrencePage,
+    Occurrence,
+    OccurrenceList,
+} from './occurrence.schema.js';
 
 export class TransactionService {
     private db: MySql2Database;
@@ -67,7 +36,7 @@ export class TransactionService {
         this.db = db;
     }
 
-    async list(opts: TransactionList, userId: number) {
+    async list(opts: TransactionList, userId: number): Promise<Transaction[]> {
         const txns = await this.db
             .select()
             .from(transactions)
@@ -79,13 +48,16 @@ export class TransactionService {
                         : undefined,
                 ),
             )
-            .then((rs) => rs.map(deserializeTransaction));
+            .then((rs) => rs.map(transactionFromDb));
 
         return txns;
     }
 
     // TODO: maybe should be in its own service later on
-    async listOccurrences(opts: OccurrenceList, userId: number) {
+    async listOccurrences(
+        opts: OccurrenceList,
+        userId: number,
+    ): Promise<OccurrencePage> {
         // Drizzle wants js dates, so pre-process
         const fromDate = opts.from.toJSDate();
         const toDate = opts.to.toJSDate();
@@ -117,7 +89,7 @@ export class TransactionService {
                         : undefined,
                 ),
             )
-            .then((rs) => rs.map(deserializeTransaction));
+            .then((rs) => rs.map(transactionFromDb));
 
         const occurrences = txns.flatMap((txn) =>
             getTransactionOccurrences(txn, opts.from, opts.to),
@@ -149,7 +121,7 @@ export class TransactionService {
         };
     }
 
-    async create(txn: TransactionCreate, userId: number) {
+    async create(txn: TransactionCreate, userId: number): Promise<void> {
         await this.db
             .insert(transactions)
             .values({
@@ -158,14 +130,14 @@ export class TransactionService {
                 userId,
                 id: undefined,
                 recurrence: txn.recurrence
-                    ? serializeRecurrence(txn.recurrence)
+                    ? recurrenceToDb(txn.recurrence)
                     : null,
                 recurrenceEndsAt: txn.recurrence?.endsAt?.toJSDate(),
             })
             .execute();
     }
 
-    async update(txn: TransactionUpdate, userId: number) {
+    async update(txn: TransactionUpdate, userId: number): Promise<void> {
         await this.db
             .update(transactions)
             .set({
@@ -183,17 +155,21 @@ export class TransactionService {
     }
 }
 
-function deserializeTransaction(raw: typeof transactions.$inferSelect) {
-    const { date, recurrence, recurrenceEndsAt, ...rest } = raw;
+type TransactionSelect = typeof transactions.$inferSelect;
 
-    const r = recurrence
-        ? deserializeRecurrence(recurrence, recurrenceEndsAt ?? undefined)
+function transactionFromDb(raw: TransactionSelect): Transaction {
+    const recurrence = raw.recurrence
+        ? recurrenceFromDb(raw.recurrence, raw.recurrenceEndsAt ?? undefined)
         : null;
 
     return {
-        ...rest,
-        date: DateTime.fromJSDate(date),
-        recurrence: r,
+        id: raw.id,
+        amount: raw.amount,
+        categoryId: raw.categoryId,
+        date: DateTime.fromJSDate(raw.date),
+        description: raw.description ?? '',
+        recurrence,
+        userId: raw.userId,
     };
 }
 
@@ -201,7 +177,7 @@ function getTransactionOccurrences(
     txn: Transaction,
     from: DateTime,
     to: DateTime,
-) {
+): Occurrence[] {
     const dates = txn.recurrence
         ? extrapolateRecurrence(txn.recurrence, txn.date, from, to)
         : [txn.date];

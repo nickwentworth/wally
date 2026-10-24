@@ -1,37 +1,7 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import z from 'zod';
 import { categories } from '../../db/schema.js';
 import { and, eq } from 'drizzle-orm';
-
-// -------------------- Schemas/Types -------------------- //
-
-export const CATEGORY_ICONS = [
-    'shoppping',
-    'gift',
-    'utensils',
-    'car',
-    'house',
-    'briefcase',
-] as const;
-
-const CategoryIcon = z.enum(CATEGORY_ICONS);
-
-export const CategorySave = z.object({
-    id: z.number().optional(),
-    name: z.string(),
-    fgColor: z.string(),
-    bgColor: z.string(),
-    icon: z.enum(CATEGORY_ICONS),
-});
-type CategorySave = z.infer<typeof CategorySave>;
-
-export const CategoryDelete = z.object({
-    id: z.number(),
-});
-
-type CategorySelectRaw = typeof categories.$inferSelect;
-
-// -------------------- Service -------------------- //
+import { Category, CategoryIcon, CategorySave } from './category.schema.js';
 
 export class CategoryService {
     private db: MySql2Database;
@@ -40,15 +10,15 @@ export class CategoryService {
         this.db = db;
     }
 
-    async getAllCategories(userId: number) {
+    async getAllCategories(userId: number): Promise<Category[]> {
         return await this.db
             .select()
             .from(categories)
             .where(eq(categories.userId, userId))
-            .then((rs) => rs.map(this.narrowCategorySelect));
+            .then((rs) => rs.map(categoryFromDb));
     }
 
-    async saveCategory(category: CategorySave, userId: number) {
+    async saveCategory(category: CategorySave, userId: number): Promise<void> {
         const data = {
             ...category,
             userId,
@@ -64,16 +34,18 @@ export class CategoryService {
         }
     }
 
-    async deleteCategory(id: number, userId: number) {
+    async deleteCategory(id: number, userId: number): Promise<void> {
         await this.db
             .delete(categories)
             .where(and(eq(categories.id, id), eq(categories.userId, userId)));
     }
+}
 
-    private narrowCategorySelect(raw: CategorySelectRaw) {
-        return {
-            ...raw,
-            icon: CategoryIcon.parse(raw.icon),
-        };
-    }
+type CategorySelect = typeof categories.$inferSelect;
+
+function categoryFromDb(category: CategorySelect): Category {
+    return {
+        ...category,
+        icon: CategoryIcon.parse(category.icon),
+    };
 }

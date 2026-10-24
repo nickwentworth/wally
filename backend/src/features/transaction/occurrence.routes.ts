@@ -1,13 +1,23 @@
 import { ApiRouter, authedProcedure } from '../../api/orpc.js';
-import { OccurrenceList } from './transaction.service.js';
+import {
+    occrrenceToJson,
+    OccurrenceList,
+    OccurrencePageJson,
+} from './occurrence.schema.js';
 
 export const occurrenceRouter = {
     list: authedProcedure
         .input(OccurrenceList)
+        .output(OccurrencePageJson)
         .handler(async ({ context, input }) => {
-            return await context.services.transaction.listOccurrences(
+            const page = await context.services.transaction.listOccurrences(
                 input,
                 context.user.id,
             );
+
+            return {
+                ...page,
+                occurrences: page.occurrences.map(occrrenceToJson),
+            };
         }),
 } satisfies ApiRouter;
