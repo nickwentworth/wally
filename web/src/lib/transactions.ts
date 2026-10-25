@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient, ApiInput } from './api';
+import { apiClient, ApiInput, ApiOutput, unwrap } from './api';
 import { occurrenceKey } from './occurrences';
 
 // -------------------- Hooks -------------------- //
@@ -8,13 +8,12 @@ const transactionKey = ['transaction'];
 
 export function useTransactions(opts: ApiInput<'/transaction/list', 'post'>) {
     return useQuery({
-        queryFn: async () => {
-            const query = await apiClient.POST('/transaction/list', {
-                body: opts,
-            });
-            if (!query.response.ok) throw query.error;
-            return query.data as any; // TODO: use proper type
-        },
+        queryFn: () =>
+            unwrap(
+                apiClient.POST('/transaction/list', {
+                    body: opts,
+                }),
+            ),
         queryKey: [...transactionKey, 'list', opts],
     });
 }
@@ -28,7 +27,9 @@ export function useTransactionCreate(opts: UseTxnCreateOpts) {
 
     return useMutation({
         mutationFn: (transaction: ApiInput<'/transaction/create', 'post'>) =>
-            apiClient.POST('/transaction/create', { body: transaction }),
+            unwrap(
+                apiClient.POST('/transaction/create', { body: transaction }),
+            ),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: transactionKey });
             qc.invalidateQueries({ queryKey: occurrenceKey });
@@ -42,7 +43,9 @@ export function useTransactionUpdate() {
 
     return useMutation({
         mutationFn: (transaction: ApiInput<'/transaction/update', 'post'>) =>
-            apiClient.POST('/transaction/update', { body: transaction }),
+            unwrap(
+                apiClient.POST('/transaction/update', { body: transaction }),
+            ),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: transactionKey });
             qc.invalidateQueries({ queryKey: occurrenceKey });
@@ -52,7 +55,7 @@ export function useTransactionUpdate() {
 
 /* -------------------- Types / Constants -------------------- */
 
-export type Transaction = any; // TODO: ApiOutput<'/transaction/list', 'post'>[number];
+export type Transaction = ApiOutput<'/transaction/list', 'post'>[number];
 
 // -------------------- Helpers -------------------- //
 

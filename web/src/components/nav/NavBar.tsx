@@ -1,19 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-// import { trpc } from '../../lib/trpc';
 import { Icon } from '../common';
 import { NavBarLink } from './NavBarLink';
-import { apiClient } from '../../lib/api';
+import { useUser } from '../../lib/user';
 
 export function NavBar() {
-    // TODO: refine logic and loading handling, just testing for now
-    const userQuery = useQuery({
-        queryFn: async () => {
-            const query = await apiClient.GET('/user/me');
-            if (!query.response.ok) throw query.error;
-            return query.data as any; // TODO: use proper type
-        },
-        queryKey: ['users'],
-    });
+    const userQuery = useUser();
 
     return (
         <nav className='bg-cream-100 border-cream-200 border-r w-55 flex flex-col gap-3 p-3'>

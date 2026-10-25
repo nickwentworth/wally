@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient, ApiInput } from './api';
+import { apiClient, ApiInput, ApiOutput, unwrap } from './api';
 
 /* -------------------- Hooks -------------------- */
 
@@ -7,17 +7,15 @@ export const occurrenceKey = ['occurrence'];
 
 export function useOccurrences(opts: ApiInput<'/occurrence/list', 'post'>) {
     return useQuery({
-        queryFn: async () => {
-            const query = await apiClient.POST('/occurrence/list', {
-                body: opts,
-            });
-            if (!query.response.ok) throw query.error;
-            return query.data as any; // TODO: use proper type
-        },
+        queryFn: () =>
+            unwrap(apiClient.POST('/occurrence/list', { body: opts })),
         queryKey: [...occurrenceKey, 'list', opts],
     });
 }
 
 /* -------------------- Types / Constants -------------------- */
 
-export type Occurrence = any; // TODO: ApiOutput<'/occurrence/list', 'post'>[number];
+export type Occurrence = ApiOutput<
+    '/occurrence/list',
+    'post'
+>['occurrences'][number];
