@@ -20,6 +20,7 @@ import {
     List,
     LayoutGrid,
     ChevronRight,
+    LoaderCircle,
 } from 'lucide-react';
 import { CategoryIconName } from '../../lib/categories';
 
@@ -47,6 +48,7 @@ const ICONS = {
     settings: Settings,
     receipt: Receipt,
     tag: Tag,
+    spinner: LoaderCircle,
 } satisfies Record<string, LucideIcon>;
 
 export type IconType = keyof typeof ICONS;

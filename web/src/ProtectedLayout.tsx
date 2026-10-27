@@ -1,35 +1,55 @@
-import { Navigate, Outlet, useOutletContext } from 'react-router';
+import { Navigate, Outlet } from 'react-router';
 import { NavBar } from './components/nav/NavBar';
-import { useUser } from './lib/user';
+import { User, useUser } from './lib/user';
+import { Icon } from './components/common';
+import { createContext, useContext } from 'react';
 
-type ProtectedLayoutContext = {
-    onAddTransactionClick: () => void;
-};
+const AuthedUserContext = createContext<User | null>(null);
 
 export function ProtectedLayout() {
     const userQuery = useUser();
 
     if (userQuery.status === 'pending') {
-        return <p>Loading...</p>;
+        return (
+            <div className='w-dvw h-dvh bg-cream-50 flex items-center justify-center gap-1'>
+                <Icon icon='spinner' className='animate-spin' size={16} />
+                <span>Loading</span>
+            </div>
+        );
     }
+
     if (userQuery.status === 'error') {
-        return <p>Something went wrong loading your account.</p>;
+        return (
+            <div className='w-dvw h-dvh bg-cream-50 flex flex-col items-center justify-center gap-1'>
+                <span>Something went wrong loading your account.</span>
+                <span>{userQuery.error.message}</span>
+            </div>
+        );
     }
+
     if (userQuery.data === null) {
         return <Navigate to='/login' />;
     }
 
     return (
-        <div className='w-dvw h-dvh flex'>
-            <NavBar />
+        <AuthedUserContext value={userQuery.data}>
+            <div className='w-dvw h-dvh bg-cream-50 flex'>
+                <NavBar />
 
-            <div className='bg-cream-50 flex flex-col grow'>
-                <Outlet />
+                <div className='grow'>
+                    <Outlet />
+                </div>
             </div>
-        </div>
+        </AuthedUserContext>
     );
 }
 
-export function useProtectedLayoutContext() {
-    return useOutletContext<ProtectedLayoutContext>();
+export function useAuthedUser() {
+    const user = useContext(AuthedUserContext);
+    if (!user) {
+        throw new Error(
+            'useAuthedUser must be called by a child of ProtectedLayout',
+        );
+    }
+    return user;
 }

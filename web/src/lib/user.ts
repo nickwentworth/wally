@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient, unwrap } from './api';
+import { apiClient, ApiOutput, unwrap } from './api';
 
 export function useUser() {
     return useQuery({
@@ -7,3 +7,5 @@ export function useUser() {
         queryKey: ['user'],
     });
 }
+
+export type User = NonNullable<ApiOutput<'/user/me', 'get'>>;

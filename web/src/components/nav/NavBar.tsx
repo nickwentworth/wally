@@ -1,9 +1,9 @@
 import { Icon } from '../common';
 import { NavBarLink } from './NavBarLink';
-import { useUser } from '../../lib/user';
+import { useAuthedUser } from '../../ProtectedLayout';
 
 export function NavBar() {
-    const userQuery = useUser();
+    const user = useAuthedUser();
 
     return (
         <nav className='bg-cream-100 border-cream-200 border-r w-55 flex flex-col gap-3 p-3'>
@@ -37,11 +37,9 @@ export function NavBar() {
                 </span>
 
                 <span className='flex flex-col grow min-w-0'>
-                    <span className='text-xs'>
-                        {userQuery.data?.first ?? '...'}
-                    </span>
+                    <span className='text-xs'>{user.first}</span>
                     <span className='text-[11px] text-taupe-400 overflow-hidden text-ellipsis'>
-                        {userQuery.data?.email ?? '...'}
+                        {user.email}
                     </span>
                 </span>
 
