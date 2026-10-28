@@ -9,19 +9,13 @@ import { formatRecurrenceName } from '../../lib/recurrence';
 import { Icon, TableCell, TableRow } from '../common';
 import { Occurrence } from '../../lib/occurrences';
 
-type TxnTableRowProps = {
+type OccurrenceRowProps = {
     occurrence: Occurrence;
 };
 
-export function TxnTableRow(props: TxnTableRowProps) {
+export function OccurrenceRow(props: OccurrenceRowProps) {
     const { mutate: updateTxn } = useTransactionUpdate();
     const { data: categories } = useCategories();
-
-    // TODO: fix backend so this is definitely not null
-    const date = props.occurrence.date?.split('T')[0];
-    if (date === undefined) {
-        return 'ERROR';
-    }
 
     const recurrence = props.occurrence.recurrence
         ? formatRecurrenceName(props.occurrence.recurrence)
@@ -35,7 +29,7 @@ export function TxnTableRow(props: TxnTableRowProps) {
         <TableRow>
             <TableCell>
                 <Editable
-                    value={date}
+                    value={props.occurrence.date}
                     display={(d) => <p className='px-3'>{d}</p>}
                     input={(d, setD) => (
                         <Input
@@ -129,14 +123,14 @@ export function TxnTableRow(props: TxnTableRowProps) {
                             <Input
                                 className='grow'
                                 type='text'
-                                value={desc ?? ''}
+                                value={desc}
                                 onChange={(e) => setDesc(e.target.value)}
                                 placeholder='Add a note'
                             />
                         )}
                         onCommit={(desc) =>
                             updateTxn({
-                                description: desc ?? '',
+                                description: desc,
                                 id: props.occurrence.transactionId,
                             })
                         }

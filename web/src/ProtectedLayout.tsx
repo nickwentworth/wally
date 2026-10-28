@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from 'react-router';
 import { NavBar } from './components/nav/NavBar';
 import { User, useUser } from './lib/user';
-import { Icon } from './components/common';
 import { createContext, useContext } from 'react';
+import { Loading } from './components/common/Loading';
 
 const AuthedUserContext = createContext<User | null>(null);
 
@@ -12,7 +12,7 @@ export function ProtectedLayout() {
     if (userQuery.status === 'pending') {
         return (
             <div className='w-dvw h-dvh bg-cream-50 flex items-center justify-center gap-1'>
-                <Icon icon='spinner' className='animate-spin' size={16} />
+                <Loading variant='spin' size='md' />
                 <span>Loading</span>
             </div>
         );

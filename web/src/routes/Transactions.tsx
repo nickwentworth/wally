@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../components/common';
 import { Tab, Tabs } from '../components/common/Tabs';
-import { TxnTable } from '../components/transaction/TxnTable';
+import { OccurrenceGrid } from '../components/transaction/OccurrenceGrid';
 import { RecurringTransactionGrid } from '../components/transaction/RecurringTransactionGrid';
 
 const TXN_TABS = {
@@ -15,7 +15,7 @@ export function Transactions() {
     const [tab, setTab] = useState<TxnTab>('transactions');
 
     const tabs = {
-        transactions: <TxnTable />,
+        transactions: <OccurrenceGrid />,
         recurring: <RecurringTransactionGrid />,
     } satisfies Record<TxnTab, React.ReactElement>;
 
