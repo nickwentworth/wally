@@ -7,7 +7,7 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
     ? Omit<T, K>
     : never;
 
-type Recurrence = NonNullable<Occurrence['recurrence']>;
+type Recurrence = NonNullable<Occurrence['transaction']['recurrence']>;
 type RecurrenceParts = DistributiveOmit<Recurrence, 'endsAt'>;
 
 export const WEEKDAYS = [

@@ -103,11 +103,11 @@ export class TransactionService {
             income = 0,
             expenses = 0;
         occurrences.forEach((occ) => {
-            net += occ.amount;
-            if (occ.amount > 0) {
-                income += occ.amount;
+            net += occ.transaction.amount;
+            if (occ.transaction.amount > 0) {
+                income += occ.transaction.amount;
             } else {
-                expenses += occ.amount;
+                expenses += occ.transaction.amount;
             }
         });
 
@@ -182,11 +182,8 @@ function getTransactionOccurrences(
         ? extrapolateRecurrence(txn.recurrence, txn.date, from, to)
         : [txn.date];
 
-    const { id, ...rest } = txn;
-
     return dates.map((date) => ({
-        ...rest,
         date,
-        transactionId: id,
+        transaction: txn,
     }));
 }

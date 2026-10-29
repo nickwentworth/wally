@@ -1,6 +1,6 @@
 import { ApiRouter, authedProcedure } from '../../api/orpc.js';
 import {
-    occrrenceToJson,
+    occurrenceToJson,
     OccurrenceList,
     OccurrencePageJson,
 } from './occurrence.schema.js';
@@ -17,7 +17,7 @@ export const occurrenceRouter = {
 
             return {
                 ...page,
-                occurrences: page.occurrences.map(occrrenceToJson),
+                occurrences: page.occurrences.map(occurrenceToJson),
             };
         }),
 } satisfies ApiRouter;

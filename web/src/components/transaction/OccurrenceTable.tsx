@@ -32,7 +32,7 @@ export function OccurrenceTable(props: OccurrenceTableProps) {
                 {props.occurrences.map((occ) => (
                     <OccurrenceRow
                         occurrence={occ}
-                        key={`${occ.transactionId}_${occ.date}`}
+                        key={`${occ.transaction.id}_${occ.date}`}
                     />
                 ))}
             </tbody>

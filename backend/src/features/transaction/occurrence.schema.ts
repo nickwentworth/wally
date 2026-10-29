@@ -1,7 +1,11 @@
 import z from 'zod';
 import { LuxonDateTime, OmitStrict } from '../../util/types.js';
-import { Transaction, TransactionJson } from './transaction.schema.js';
-import { recurrenceToJson } from './recurrence.js';
+import {
+    Transaction,
+    TransactionJson,
+    transactionToJson,
+} from './transaction.schema.js';
+import { DateTime } from 'luxon';
 
 /* ———————————————————— Input ———————————————————— */
 
@@ -17,20 +21,21 @@ export type OccurrenceList = z.infer<typeof OccurrenceList>;
 
 /* ———————————————————— Output ———————————————————— */
 
-export const OccurrenceJson = TransactionJson.omit({ id: true }).extend({
-    transactionId: z.int(),
+export const OccurrenceJson = z.object({
+    date: z.string(),
+    transaction: TransactionJson,
 });
 export type OccurrenceJson = z.infer<typeof OccurrenceJson>;
 
-export type Occurrence = OmitStrict<Transaction, 'id'> & {
-    transactionId: number;
+export type Occurrence = {
+    date: DateTime;
+    transaction: Transaction;
 };
 
-export function occrrenceToJson(occ: Occurrence): OccurrenceJson {
+export function occurrenceToJson(occ: Occurrence): OccurrenceJson {
     return {
-        ...occ,
         date: occ.date.toISODate() ?? '',
-        recurrence: occ.recurrence ? recurrenceToJson(occ.recurrence) : null,
+        transaction: transactionToJson(occ.transaction),
     };
 }
 

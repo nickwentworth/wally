@@ -17,10 +17,6 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
     const { mutate: updateTxn } = useTransactionUpdate();
     const { data: categories } = useCategories();
 
-    const recurrence = props.occurrence.recurrence
-        ? formatRecurrenceName(props.occurrence.recurrence)
-        : null;
-
     const fetchCategory = (categoryId: number | null) => {
         return categories?.find((c) => c.id === categoryId);
     };
@@ -42,7 +38,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                     onCommit={(d) => {
                         updateTxn({
                             date: d,
-                            id: props.occurrence.transactionId,
+                            id: props.occurrence.transaction.id,
                         });
                     }}
                 />
@@ -51,7 +47,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
             {/* FIXME: category dropdown on final table rows is cutoff due to overflow-hidden */}
             <TableCell>
                 <Editable
-                    value={props.occurrence.categoryId}
+                    value={props.occurrence.transaction.categoryId}
                     display={(catId) => {
                         const category = fetchCategory(catId);
                         return category ? (
@@ -74,7 +70,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                     onCommit={(catId) =>
                         updateTxn({
                             categoryId: catId,
-                            id: props.occurrence.transactionId,
+                            id: props.occurrence.transaction.id,
                         })
                     }
                 />
@@ -82,7 +78,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
 
             <TableCell align='right'>
                 <Editable
-                    value={props.occurrence.amount}
+                    value={props.occurrence.transaction.amount}
                     display={(amt) => (
                         <p className='px-3'>{formatDollar(amt)}</p>
                     )}
@@ -96,7 +92,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                     onCommit={(amt) => {
                         updateTxn({
                             amount: amt,
-                            id: props.occurrence.transactionId,
+                            id: props.occurrence.transaction.id,
                         });
                     }}
                 />
@@ -104,16 +100,19 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
 
             <TableCell>
                 <div className='flex items-center'>
-                    {recurrence && (
+                    {props.occurrence.transaction.recurrence && (
                         <span className='bg-cream-100 border border-cream-200 h-6 ml-2 px-2 inline-flex items-center gap-1 rounded-full'>
                             <Icon icon='repeat' size={12} />
                             <span className='text-xs font-semibold'>
-                                {recurrence}
+                                {formatRecurrenceName(
+                                    props.occurrence.transaction.recurrence,
+                                )}
                             </span>
                         </span>
                     )}
+
                     <Editable
-                        value={props.occurrence.description}
+                        value={props.occurrence.transaction.description}
                         display={(desc) => (
                             <p className='px-3 grow self-stretch content-center'>
                                 {desc}
@@ -131,7 +130,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                         onCommit={(desc) =>
                             updateTxn({
                                 description: desc,
-                                id: props.occurrence.transactionId,
+                                id: props.occurrence.transaction.id,
                             })
                         }
                     />
