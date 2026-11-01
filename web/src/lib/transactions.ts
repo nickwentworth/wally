@@ -4,7 +4,7 @@ import { occurrenceKey } from './occurrences';
 
 // -------------------- Hooks -------------------- //
 
-const transactionKey = ['transaction'];
+export const transactionKey = ['transaction'];
 
 export function useTransactions(opts: ApiInput<'/transaction/list', 'post'>) {
     return useQuery({

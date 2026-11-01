@@ -6,6 +6,7 @@ import {
     decimal,
     foreignKey,
     mysqlTable,
+    primaryKey,
     serial,
     timestamp,
     varchar,
@@ -64,7 +65,7 @@ export const transactions = mysqlTable(
             mode: 'number',
         }).notNull(),
         date: date('date').notNull(),
-        description: varchar('description', { length: 255 }),
+        description: varchar('description', { length: 255 }).notNull(),
         recurrence: varchar('recurrence_data', { length: 1024 }),
         recurrenceEndsAt: date('recurrence_ends_at'),
         userId: bigint('user_id', { mode: 'number', unsigned: true }).notNull(),
@@ -78,6 +79,36 @@ export const transactions = mysqlTable(
         foreignKey({
             columns: [table.categoryId],
             foreignColumns: [categories.id],
+        }).onDelete('set null'),
+    ],
+);
+
+export const exceptions = mysqlTable(
+    'exceptions',
+    {
+        masterId: bigint('master_id', {
+            mode: 'number',
+            unsigned: true,
+        }).notNull(),
+        exceptionId: bigint('exception_id', {
+            mode: 'number',
+            unsigned: true,
+        }),
+        date: date('date').notNull(),
+    },
+    (table) => [
+        primaryKey({
+            // Explicitly name PK to fix drizzle-kit push bug
+            name: 'exceptions_master_id_date',
+            columns: [table.masterId, table.date],
+        }),
+        foreignKey({
+            columns: [table.masterId],
+            foreignColumns: [transactions.id],
+        }).onDelete('cascade'),
+        foreignKey({
+            columns: [table.exceptionId],
+            foreignColumns: [transactions.id],
         }).onDelete('set null'),
     ],
 );

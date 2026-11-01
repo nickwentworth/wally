@@ -7,14 +7,14 @@ import { Input } from '../inputs/Input';
 import { TxnAmountInput } from '../inputs/TxnAmountInput';
 import { formatRecurrenceName } from '../../lib/recurrence';
 import { Icon, TableCell, TableRow } from '../common';
-import { Occurrence } from '../../lib/occurrences';
+import { Occurrence, useOccurrenceUpdate } from '../../lib/occurrences';
 
 type OccurrenceRowProps = {
     occurrence: Occurrence;
 };
 
 export function OccurrenceRow(props: OccurrenceRowProps) {
-    const { mutate: updateTxn } = useTransactionUpdate();
+    const { mutate: updateOccurrence } = useOccurrenceUpdate();
     const { data: categories } = useCategories();
 
     const fetchCategory = (categoryId: number | null) => {
@@ -35,12 +35,15 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                             onChange={(e) => setD(e.target.value)}
                         />
                     )}
-                    onCommit={(d) => {
-                        updateTxn({
-                            date: d,
-                            id: props.occurrence.transaction.id,
-                        });
-                    }}
+                    onCommit={(d) =>
+                        updateOccurrence({
+                            date: props.occurrence.date,
+                            transaction: {
+                                id: props.occurrence.transaction.id,
+                                date: d,
+                            },
+                        })
+                    }
                 />
             </TableCell>
 
@@ -68,9 +71,12 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                         />
                     )}
                     onCommit={(catId) =>
-                        updateTxn({
-                            categoryId: catId,
-                            id: props.occurrence.transaction.id,
+                        updateOccurrence({
+                            date: props.occurrence.date,
+                            transaction: {
+                                id: props.occurrence.transaction.id,
+                                categoryId: catId,
+                            },
                         })
                     }
                 />
@@ -89,12 +95,15 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                             size='sm'
                         />
                     )}
-                    onCommit={(amt) => {
-                        updateTxn({
-                            amount: amt,
-                            id: props.occurrence.transaction.id,
-                        });
-                    }}
+                    onCommit={(amount) =>
+                        updateOccurrence({
+                            date: props.occurrence.date,
+                            transaction: {
+                                id: props.occurrence.transaction.id,
+                                amount,
+                            },
+                        })
+                    }
                 />
             </TableCell>
 
@@ -128,9 +137,12 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                             />
                         )}
                         onCommit={(desc) =>
-                            updateTxn({
-                                description: desc,
-                                id: props.occurrence.transaction.id,
+                            updateOccurrence({
+                                date: props.occurrence.date,
+                                transaction: {
+                                    id: props.occurrence.transaction.id,
+                                    description: desc,
+                                },
                             })
                         }
                     />

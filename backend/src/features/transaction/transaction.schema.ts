@@ -8,6 +8,12 @@ import {
 } from './recurrence.js';
 import { DateTime } from 'luxon';
 
+/* ———————————————————— Shared ———————————————————— */
+
+const Amount = z.number();
+const CategoryId = z.int().nullable();
+const Description = z.string();
+
 /* ———————————————————— Input ———————————————————— */
 
 export const TransactionList = z.object({
@@ -16,20 +22,20 @@ export const TransactionList = z.object({
 export type TransactionList = z.infer<typeof TransactionList>;
 
 export const TransactionCreate = z.object({
-    amount: z.number(),
-    categoryId: z.int().optional(),
+    amount: Amount,
+    categoryId: CategoryId,
     date: LuxonDateTime,
-    description: z.string().optional(),
-    recurrence: RecurrenceJson.transform(recurrenceFromJson).optional(),
+    description: Description,
+    recurrence: RecurrenceJson.transform(recurrenceFromJson).nullable(),
 });
 export type TransactionCreate = z.infer<typeof TransactionCreate>;
 
 export const TransactionUpdate = z.object({
     id: z.int(),
-    amount: z.number().optional(),
-    categoryId: z.int().nullable().optional(),
+    amount: Amount.optional(),
+    categoryId: CategoryId.optional(),
     date: LuxonDateTime.optional(),
-    description: z.string().optional(),
+    description: Description.optional(),
 });
 export type TransactionUpdate = z.infer<typeof TransactionUpdate>;
 
@@ -37,10 +43,10 @@ export type TransactionUpdate = z.infer<typeof TransactionUpdate>;
 
 export const TransactionJson = z.object({
     id: z.int(),
-    amount: z.number(), // TODO: more advanced schema handling here?
-    categoryId: z.int().nullable(),
+    amount: Amount,
+    categoryId: CategoryId,
     date: z.string(),
-    description: z.string(),
+    description: Description,
     recurrence: RecurrenceJson.nullable(),
 });
 export type TransactionJson = z.infer<typeof TransactionJson>;

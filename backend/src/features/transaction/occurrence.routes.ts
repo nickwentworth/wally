@@ -3,6 +3,7 @@ import {
     occurrenceToJson,
     OccurrenceList,
     OccurrencePageJson,
+    OccurrenceUpdate,
 } from './occurrence.schema.js';
 
 export const occurrenceRouter = {
@@ -19,5 +20,14 @@ export const occurrenceRouter = {
                 ...page,
                 occurrences: page.occurrences.map(occurrenceToJson),
             };
+        }),
+
+    update: authedProcedure
+        .input(OccurrenceUpdate)
+        .handler(async ({ context, input }) => {
+            await context.services.transaction.updateOccurrence(
+                input,
+                context.user.id,
+            );
         }),
 } satisfies ApiRouter;

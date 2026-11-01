@@ -4,6 +4,7 @@ import {
     Transaction,
     TransactionJson,
     transactionToJson,
+    TransactionUpdate,
 } from './transaction.schema.js';
 import { DateTime } from 'luxon';
 
@@ -18,6 +19,12 @@ export const OccurrenceList = z.object({
     limit: z.int().min(1).max(100).default(50),
 });
 export type OccurrenceList = z.infer<typeof OccurrenceList>;
+
+export const OccurrenceUpdate = z.object({
+    date: LuxonDateTime,
+    transaction: TransactionUpdate,
+});
+export type OccurrenceUpdate = z.infer<typeof OccurrenceUpdate>;
 
 /* ———————————————————— Output ———————————————————— */
 

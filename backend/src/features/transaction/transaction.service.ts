@@ -1,5 +1,5 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import { transactions } from '../../db/schema.js';
+import { exceptions, transactions } from '../../db/schema.js';
 import {
     and,
     eq,
@@ -27,6 +27,7 @@ import {
     OccurrencePage,
     Occurrence,
     OccurrenceList,
+    OccurrenceUpdate,
 } from './occurrence.schema.js';
 
 export class TransactionService {
@@ -34,6 +35,16 @@ export class TransactionService {
 
     constructor(db: MySql2Database) {
         this.db = db;
+    }
+
+    async getById(id: number, userId: number): Promise<Transaction | null> {
+        return await this.db
+            .select()
+            .from(transactions)
+            .where(
+                and(eq(transactions.id, id), eq(transactions.userId, userId)),
+            )
+            .then((rs) => (rs.length > 0 ? transactionFromDb(rs[0]) : null));
     }
 
     async list(opts: TransactionList, userId: number): Promise<Transaction[]> {
@@ -62,9 +73,13 @@ export class TransactionService {
         const fromDate = opts.from.toJSDate();
         const toDate = opts.to.toJSDate();
 
-        const txns = await this.db
-            .select()
+        const txnRows = await this.db
+            .select({
+                transaction: transactions,
+                exception: exceptions,
+            })
             .from(transactions)
+            .leftJoin(exceptions, eq(transactions.id, exceptions.masterId))
             .where(
                 and(
                     eq(transactions.userId, userId),
@@ -88,12 +103,40 @@ export class TransactionService {
                         ? like(transactions.description, `%${opts.search}%`)
                         : undefined,
                 ),
-            )
-            .then((rs) => rs.map(transactionFromDb));
+            );
 
-        const occurrences = txns.flatMap((txn) =>
-            getTransactionOccurrences(txn, opts.from, opts.to),
-        );
+        const txns = new Map<
+            number,
+            { transaction: Transaction; exceptionDates: DateTime[] }
+        >();
+
+        txnRows.forEach((row) => {
+            const { transaction, exception } = row;
+
+            if (!txns.has(transaction.id)) {
+                txns.set(transaction.id, {
+                    transaction: transactionFromDb(transaction),
+                    exceptionDates: [],
+                });
+            }
+
+            if (exception) {
+                const date = DateTime.fromJSDate(exception.date);
+                txns.get(transaction.id)?.exceptionDates.push(date);
+            }
+        });
+
+        const occurrences = Array.from(txns.values()).flatMap((value) => {
+            const { transaction, exceptionDates } = value;
+
+            return getTransactionOccurrences(
+                transaction,
+                opts.from,
+                opts.to,
+            ).filter(
+                (occ) => !exceptionDates.some((exc) => exc.equals(occ.date)),
+            );
+        });
 
         occurrences.sort(
             (a, b) => b.date.toUnixInteger() - a.date.toUnixInteger(),
@@ -121,20 +164,57 @@ export class TransactionService {
         };
     }
 
-    async create(txn: TransactionCreate, userId: number): Promise<void> {
-        await this.db
+    async updateOccurrence(
+        occ: OccurrenceUpdate,
+        userId: number,
+    ): Promise<void> {
+        const txn = await this.getById(occ.transaction.id, userId);
+        if (!txn) {
+            throw new Error('Transaction not found');
+        }
+
+        if (!txn.recurrence) {
+            // This is a simple one-off transaction, or already an exception
+            await this.update(occ.transaction, userId);
+            return;
+        }
+
+        // TODO: Would be best to use a DB transaction below
+
+        const exceptionId = await this.create(
+            {
+                amount: occ.transaction.amount ?? txn.amount,
+                categoryId:
+                    // Specifically check undefined, since null is a valid option
+                    occ.transaction.categoryId !== undefined
+                        ? occ.transaction.categoryId
+                        : txn.categoryId,
+                date: occ.transaction.date ?? occ.date,
+                description: occ.transaction.description ?? txn.description,
+                recurrence: null,
+            },
+            userId,
+        );
+
+        await this.createException(txn.id, exceptionId, occ.date);
+    }
+
+    async create(txn: TransactionCreate, userId: number): Promise<number> {
+        return await this.db
             .insert(transactions)
             .values({
-                ...txn,
-                date: txn.date.toJSDate(),
                 userId,
-                id: undefined,
+                amount: txn.amount,
+                categoryId: txn.categoryId,
+                date: txn.date.toJSDate(),
+                description: txn.description,
                 recurrence: txn.recurrence
                     ? recurrenceToDb(txn.recurrence)
                     : null,
                 recurrenceEndsAt: txn.recurrence?.endsAt?.toJSDate(),
             })
-            .execute();
+            .$returningId()
+            .then((rs) => rs[0].id);
     }
 
     async update(txn: TransactionUpdate, userId: number): Promise<void> {
@@ -153,6 +233,18 @@ export class TransactionService {
                 ),
             );
     }
+
+    async createException(
+        masterId: number,
+        exceptionId: number,
+        exceptionDate: DateTime,
+    ): Promise<void> {
+        await this.db.insert(exceptions).values({
+            masterId,
+            exceptionId,
+            date: exceptionDate.toJSDate(),
+        });
+    }
 }
 
 type TransactionSelect = typeof transactions.$inferSelect;
@@ -167,7 +259,7 @@ function transactionFromDb(raw: TransactionSelect): Transaction {
         amount: raw.amount,
         categoryId: raw.categoryId,
         date: DateTime.fromJSDate(raw.date),
-        description: raw.description ?? '',
+        description: raw.description,
         recurrence,
         userId: raw.userId,
     };
