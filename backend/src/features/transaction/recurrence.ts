@@ -6,7 +6,7 @@ import { DateTime } from 'luxon';
 
 const RecurrenceBase = z.object({
     rate: z.number(),
-    endsAt: z.string().optional(),
+    endsAt: z.string().nullable(),
 });
 
 export const RecurrenceJson = z.discriminatedUnion('period', [
@@ -37,7 +37,7 @@ export type Recurrence = DistributiveOmit<RecurrenceJson, 'endsAt'> & {
 export function recurrenceToJson(r: Recurrence): RecurrenceJson {
     return {
         ...r,
-        endsAt: r.endsAt?.toISODate() ?? undefined,
+        endsAt: r.endsAt?.toISODate() ?? null,
     };
 }
 

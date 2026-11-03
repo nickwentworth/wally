@@ -1,6 +1,15 @@
+import { useState } from 'react';
 import { Transaction } from '../../lib/transactions';
-import { Table, TableHeader, TableRow, Text } from '../common';
+import {
+    Dialog,
+    Table,
+    TableHeader,
+    TableRow,
+    Text,
+    useDialog,
+} from '../common';
 import { RecurringTransactionRow } from './RecurringTransactionRow';
+import { TransactionForm } from './TransactionForm';
 
 type RecurringTransactionTableProps = {
     transactions: Transaction[];
@@ -9,6 +18,9 @@ type RecurringTransactionTableProps = {
 export function RecurringTransactionTable(
     props: RecurringTransactionTableProps,
 ) {
+    const [focusedTxn, setFocusedTxn] = useState<Transaction>();
+    const txnFormDialog = useDialog();
+
     if (props.transactions.length === 0) {
         return;
     }
@@ -39,10 +51,22 @@ export function RecurringTransactionTable(
                         <RecurringTransactionRow
                             key={txn.id}
                             transaction={txn}
+                            onClick={() => {
+                                setFocusedTxn(txn);
+                                txnFormDialog.open();
+                            }}
                         />
                     ))}
                 </tbody>
             </Table>
+
+            <Dialog controls={txnFormDialog} placement='right'>
+                <TransactionForm
+                    transaction={focusedTxn}
+                    onClose={txnFormDialog.close}
+                    onSubmit={txnFormDialog.close}
+                />
+            </Dialog>
         </div>
     );
 }

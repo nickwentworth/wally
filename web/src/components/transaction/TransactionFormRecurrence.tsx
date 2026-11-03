@@ -16,8 +16,8 @@ export const TransactionFormRecurrenceData = z.object({
     daysOfMonth: z.number().array(),
     daysOfYear: z.number().array(),
     endsAt: z.preprocess(
-        (val) => (val === '' ? undefined : val),
-        z.string().optional(),
+        (val) => (val === '' ? null : val),
+        z.string().nullable(),
     ),
 });
 export type TransactionFormRecurrenceData = z.infer<

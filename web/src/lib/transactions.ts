@@ -38,7 +38,11 @@ export function useTransactionCreate(opts: UseTxnCreateOpts) {
     });
 }
 
-export function useTransactionUpdate() {
+type UseTxnUpdateOpts = {
+    onSuccess?: () => void;
+};
+
+export function useTransactionUpdate(opts: UseTxnUpdateOpts) {
     const qc = useQueryClient();
 
     return useMutation({
@@ -49,6 +53,7 @@ export function useTransactionUpdate() {
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: transactionKey });
             qc.invalidateQueries({ queryKey: occurrenceKey });
+            opts.onSuccess?.();
         },
     });
 }

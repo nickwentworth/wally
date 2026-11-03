@@ -1,5 +1,9 @@
 import z from 'zod';
-import { Transaction, useTransactionCreate } from '../../lib/transactions';
+import {
+    Transaction,
+    useTransactionCreate,
+    useTransactionUpdate,
+} from '../../lib/transactions';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { todayDateInputStr } from '../../lib/dates';
 import { Button, Icon } from '../common';
@@ -13,7 +17,7 @@ import { ApiInput } from '../../lib/api';
 
 const EMPTY_TRANSACTION_FORM_ENTRY = {
     amount: 0,
-    categoryId: undefined,
+    categoryId: null,
     date: todayDateInputStr(),
     description: '',
     isRecurring: false,
@@ -23,8 +27,11 @@ const EMPTY_TRANSACTION_FORM_ENTRY = {
         daysOfMonth: [],
         daysOfWeek: [],
         daysOfYear: [],
+        endsAt: null,
     },
 } satisfies TransactionFormEntryData;
+
+const EMPTY_TRANSACTION_RECURRENCE = EMPTY_TRANSACTION_FORM_ENTRY['recurrence'];
 
 function txnFormRecurToCreate(
     r: TransactionFormRecurrenceData,
@@ -74,17 +81,40 @@ type TransactionFormProps = {
 
 export function TransactionForm(props: TransactionFormProps) {
     const { control, handleSubmit } = useForm<TransactionFormData>({
-        defaultValues: {
+        values: {
             transactions: [
                 props.transaction
                     ? {
-                          // TODO: form data, the endpoint, and the DB schema need to be reviewed
                           amount: props.transaction.amount,
-                          categoryId: props.transaction.categoryId ?? undefined,
-                          date: props.transaction.date!,
-                          description:
-                              props.transaction.description ?? undefined,
-                          isRecurring: !!props.transaction?.recurrence,
+                          categoryId: props.transaction.categoryId,
+                          date: props.transaction.date,
+                          description: props.transaction.description,
+                          isRecurring: !!props.transaction.recurrence,
+                          recurrence: props.transaction.recurrence
+                              ? {
+                                    rate: props.transaction.recurrence.rate,
+                                    period: props.transaction.recurrence.period,
+                                    daysOfWeek:
+                                        props.transaction.recurrence.period ===
+                                        'weekly'
+                                            ? props.transaction.recurrence
+                                                  .daysOfWeek
+                                            : [],
+                                    daysOfMonth:
+                                        props.transaction.recurrence.period ===
+                                        'monthly'
+                                            ? props.transaction.recurrence
+                                                  .daysOfMonth
+                                            : [],
+                                    daysOfYear:
+                                        props.transaction.recurrence.period ===
+                                        'yearly'
+                                            ? props.transaction.recurrence
+                                                  .daysOfYear
+                                            : [],
+                                    endsAt: props.transaction.recurrence.endsAt,
+                                }
+                              : EMPTY_TRANSACTION_RECURRENCE,
                       }
                     : EMPTY_TRANSACTION_FORM_ENTRY,
             ],
@@ -100,6 +130,7 @@ export function TransactionForm(props: TransactionFormProps) {
     });
 
     const createTxn = useTransactionCreate({ onSuccess: props.onSubmit });
+    const updateTxn = useTransactionUpdate({ onSuccess: props.onSubmit });
 
     const onSubmit = handleSubmit((raw: any) => {
         const data = TransactionFormData.parse(raw);
@@ -109,12 +140,20 @@ export function TransactionForm(props: TransactionFormProps) {
 
         const recurrence = txn.isRecurring
             ? txnFormRecurToCreate(txn.recurrence)
-            : undefined;
+            : null;
 
-        createTxn.mutate({
-            ...txn,
-            recurrence,
-        });
+        if (props.transaction) {
+            updateTxn.mutate({
+                id: props.transaction.id,
+                ...txn,
+                // recurrence,
+            });
+        } else {
+            createTxn.mutate({
+                ...txn,
+                recurrence,
+            });
+        }
     });
 
     return (

@@ -6,6 +6,7 @@ import { Icon, TableCell, TableRow } from '../common';
 
 type RecurringTransactionRowProps = {
     transaction: Transaction;
+    onClick: () => void;
 };
 
 export function RecurringTransactionRow(props: RecurringTransactionRowProps) {
@@ -20,7 +21,10 @@ export function RecurringTransactionRow(props: RecurringTransactionRowProps) {
     }
 
     return (
-        <TableRow className='hover:bg-cream-100 cursor-pointer group'>
+        <TableRow
+            className='hover:bg-cream-100 cursor-pointer group'
+            onClick={props.onClick}
+        >
             <TableCell>
                 <div className='flex items-center gap-2'>
                     {category ? (

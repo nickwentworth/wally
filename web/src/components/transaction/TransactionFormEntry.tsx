@@ -14,7 +14,7 @@ import { formatRecurrenceName } from '../../lib/recurrence';
 
 export const TransactionFormEntryData = z.object({
     amount: z.coerce.number(),
-    categoryId: z.coerce.number().optional(),
+    categoryId: z.coerce.number().nullable(),
     date: z.string(),
     description: z.string(),
     isRecurring: z.boolean(),
@@ -50,7 +50,7 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
                         {...props.lens.focus('categoryId').interop()}
                         render={({ field }) => (
                             <CategorySelect
-                                selectedId={field.value}
+                                selectedId={field.value ?? undefined}
                                 onSelect={(cat) => field.onChange(cat.id)}
                             />
                         )}
