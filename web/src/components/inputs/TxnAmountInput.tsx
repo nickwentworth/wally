@@ -6,7 +6,7 @@ const MAGNITUDE_RE = /^\d*\.?\d{0,2}$/;
 type TxnAmountInputProps = {
     amount: number;
     setAmount: (amt: number) => void;
-    size: 'lg' | 'sm';
+    size: 'lg' | 'md' | 'sm';
 };
 
 export function TxnAmountInput(props: TxnAmountInputProps) {
@@ -40,18 +40,21 @@ export function TxnAmountInput(props: TxnAmountInputProps) {
     const divClass = buildClass(
         'bg-white border-cream-200 border font-mono font-medium rounded-lg overflow-hidden flex',
         [props.size === 'lg', 'text-3xl h-15'],
+        [props.size === 'md', 'text-2xl h-13'],
         [props.size === 'sm', 'text-md h-10'],
     );
 
     const btnClass = buildClass(
         'bg-cream-100 border-cream-200 border-r shrink-0',
         [props.size === 'lg', 'w-12'],
+        [props.size === 'md', 'w-10'],
         [props.size === 'sm', 'w-8'],
     );
 
     const inputClass = buildClass(
         'w-0 min-w-0 grow pr-2',
         [props.size === 'lg', ''],
+        [props.size === 'md', ''],
         [props.size === 'sm', 'text-right'],
     );
 

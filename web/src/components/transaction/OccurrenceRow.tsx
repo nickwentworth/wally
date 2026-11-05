@@ -1,5 +1,5 @@
 import { useCategories } from '../../lib/categories';
-import { formatDollar, useTransactionUpdate } from '../../lib/transactions';
+import { formatDollar } from '../../lib/transactions';
 import { CategoryChip } from '../category/CategoryChip';
 import { CategorySelect } from '../inputs/CategorySelect';
 import { Editable } from '../inputs/Editable';

@@ -3,6 +3,7 @@ import { NavBar } from './components/nav/NavBar';
 import { User, useUser } from './lib/user';
 import { createContext, useContext } from 'react';
 import { Loading } from './components/common/Loading';
+import { TransactionFormProvider } from './components/transaction/TransactionFormProvider';
 
 const AuthedUserContext = createContext<User | null>(null);
 
@@ -33,13 +34,15 @@ export function ProtectedLayout() {
 
     return (
         <AuthedUserContext value={userQuery.data}>
-            <div className='w-dvw h-dvh bg-cream-50 flex'>
-                <NavBar />
+            <TransactionFormProvider>
+                <div className='w-dvw h-dvh bg-cream-50 flex'>
+                    <NavBar />
 
-                <div className='grow'>
-                    <Outlet />
+                    <div className='grow'>
+                        <Outlet />
+                    </div>
                 </div>
-            </div>
+            </TransactionFormProvider>
         </AuthedUserContext>
     );
 }

@@ -36,7 +36,7 @@ export function Dialog(props: DialogProps) {
     }, [props.controls.isOpen]);
 
     const dialogClass = buildClass(
-        'max-h-none max-w-none bg-cream-50 shadow-md',
+        'max-h-none max-w-none bg-white shadow-md',
         'backdrop:bg-black/10 backdrop:backdrop-blur-[1px]',
         'transition-all transition-discrete ease-out duration-200',
         [props.placement === 'center', 'm-auto'],

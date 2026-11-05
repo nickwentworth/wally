@@ -1,7 +1,7 @@
 import { Controller, useWatch } from 'react-hook-form';
 import z from 'zod';
 import { TxnAmountInput } from '../inputs/TxnAmountInput';
-import { Text } from '../common';
+import { Button, Icon, Text } from '../common';
 import { CategorySelect } from '../inputs/CategorySelect';
 import { Input } from '../inputs/Input';
 import { Toggle } from '../inputs/Toggle';
@@ -24,6 +24,8 @@ export type TransactionFormEntryData = z.infer<typeof TransactionFormEntryData>;
 
 type TransactionFormEntryProps = {
     lens: Lens<TransactionFormEntryData>;
+    variant: 'generic' | 'compact' | 'recurring';
+    onDelete?: () => void;
 };
 
 export function TransactionFormEntry(props: TransactionFormEntryProps) {
@@ -32,16 +34,26 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
 
     return (
         <div className='flex flex-col gap-4'>
-            <Controller
-                {...props.lens.focus('amount').interop()}
-                render={({ field }) => (
-                    <TxnAmountInput
-                        amount={field.value}
-                        setAmount={field.onChange}
-                        size='lg'
+            <div className='flex gap-2'>
+                <div className='grow'>
+                    <Controller
+                        {...props.lens.focus('amount').interop()}
+                        render={({ field }) => (
+                            <TxnAmountInput
+                                amount={field.value}
+                                setAmount={field.onChange}
+                                size={props.variant === 'compact' ? 'md' : 'lg'}
+                            />
+                        )}
                     />
+                </div>
+
+                {props.onDelete && (
+                    <Button variant='ghost' onClick={props.onDelete}>
+                        <Icon icon='close' />
+                    </Button>
                 )}
-            />
+            </div>
 
             <div className='grid grid-cols-2 gap-4'>
                 <label className='flex flex-col gap-2'>
@@ -74,97 +86,46 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
                 <Text variant='uppercase'>Description (optional)</Text>
                 <Input
                     variant='textarea'
+                    className='resize-none'
                     placeholder='Add a note...'
-                    rows={3}
+                    rows={props.variant === 'compact' ? 1 : 3}
                     {...props.lens
                         .focus('description')
                         .interop((ctrl, name) => ctrl.register(name))}
                 />
             </label>
 
-            <label className='flex flex-col gap-2'>
-                <Text variant='uppercase'>Recurring</Text>
-                <div className='flex items-center gap-2'>
-                    <Controller
-                        {...props.lens.focus('isRecurring').interop()}
-                        render={({ field }) => (
-                            <Toggle
-                                isToggled={field.value}
-                                onToggle={field.onChange}
-                            />
-                        )}
-                    />
+            {props.variant !== 'compact' && (
+                <label className='flex flex-col gap-2'>
+                    <Text variant='uppercase'>Recurring</Text>
 
-                    {isRecurring ? (
-                        <b>{formatRecurrenceName(recurrence)}</b>
-                    ) : (
-                        <span className='text-taupe-400'>Off</span>
-                    )}
-                </div>
-            </label>
-
-            {isRecurring && (
-                <TransactionFormRecurrence
-                    lens={props.lens.focus('recurrence')}
-                />
-            )}
-
-            {/* {isRecurring && (
-                        <div className='bg-cream-100 border-cream-200 border rounded-lg flex flex-col gap-4 p-4'>
-                            <label className='flex flex-col gap-2'>
-                                <Text variant='uppercase'>Repeat Every</Text>
-                                <div className='flex gap-2'>
-                                    <Input
-                                        className='w-16'
-                                        type='number'
-                                        {...register('recurrence.rate', {
-                                            required: true,
-                                        })}
+                    {props.variant === 'generic' && (
+                        <div className='flex items-center gap-2'>
+                            <Controller
+                                {...props.lens.focus('isRecurring').interop()}
+                                render={({ field }) => (
+                                    <Toggle
+                                        isToggled={field.value}
+                                        onToggle={field.onChange}
                                     />
-        
-                                    <select
-                                        className='bg-white border-cream-200 border rounded-lg h-10 p-2 grow'
-                                        {...register('recurrence.period')}
-                                    >
-                                        {TXN_RECUR_PERIODS.map((period) => (
-                                            <option value={period} key={period}>
-                                                {period}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </label>
-        
-                            {recurPeriod !== 'day' && (
-                                <div className='flex flex-col gap-2'>
-                                    <Text variant='uppercase'>Repeat on</Text>
-                                    {recurPeriod === 'week' && (
-                                        <TxnFormWeekdays
-                                            control={control}
-                                            name='recurrence.daysOfWeek'
-                                        />
-                                    )}
-                                    {recurPeriod === 'month' && (
-                                        <TxnFormMonthDays
-                                            control={control}
-                                            name='recurrence.daysOfMonth'
-                                        />
-                                    )}
-                                    {recurPeriod === 'year' && (
-                                        <TxnFormYearDays
-                                            control={control}
-                                            name='recurrence.daysOfYear'
-                                        />
-                                    )}
-                                </div>
+                                )}
+                            />
+
+                            {isRecurring ? (
+                                <span>{formatRecurrenceName(recurrence)}</span>
+                            ) : (
+                                <span className='text-taupe-400'>Off</span>
                             )}
-        
-                            <label className='flex flex-col gap-2'>
-                                <Text variant='uppercase'>Ends on (optional)</Text>
-                                <Input type='date' {...register('recurrence.endsAt')} />
-                            </label>
                         </div>
-                    )} */}
+                    )}
+
+                    {isRecurring && (
+                        <TransactionFormRecurrence
+                            lens={props.lens.focus('recurrence')}
+                        />
+                    )}
+                </label>
+            )}
         </div>
     );
 }

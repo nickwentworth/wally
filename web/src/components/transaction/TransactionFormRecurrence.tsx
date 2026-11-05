@@ -34,7 +34,7 @@ export function TransactionFormRecurrence(
     const period = useWatch(props.lens.focus('period').interop());
 
     return (
-        <div className='bg-cream-100 border-cream-200 border rounded-lg flex flex-col gap-4 p-4'>
+        <div className='bg-cream-50 border-cream-200 border rounded-lg flex flex-col gap-4 p-4'>
             <label className='flex flex-col gap-2'>
                 <Text variant='uppercase'>Repeat Every</Text>
                 <div className='flex gap-2'>

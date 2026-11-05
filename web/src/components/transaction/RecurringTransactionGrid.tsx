@@ -1,8 +1,10 @@
 import { useTransactions } from '../../lib/transactions';
 import { Button } from '../common';
 import { RecurringTransactionTable } from './RecurringTransactionTable';
+import { useTransactionForm } from './TransactionFormProvider';
 
 export function RecurringTransactionGrid() {
+    const { open: openTxnForm } = useTransactionForm();
     const { data: txns } = useTransactions({ recurringOnly: true });
 
     if (!txns) {
@@ -22,7 +24,12 @@ export function RecurringTransactionGrid() {
                     <span>Yearly</span>
                 </div>
 
-                <Button className='ml-auto' variant='primary' left='plus'>
+                <Button
+                    className='ml-auto'
+                    variant='primary'
+                    left='plus'
+                    onClick={() => openTxnForm({ type: 'createRecurring' })}
+                >
                     Add recurrence
                 </Button>
             </div>
