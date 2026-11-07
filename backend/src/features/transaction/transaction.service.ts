@@ -20,7 +20,6 @@ import {
 import {
     Transaction,
     TransactionCreate,
-    TransactionList,
     TransactionUpdate,
 } from './transaction.schema.js';
 import {
@@ -37,7 +36,12 @@ export class TransactionService {
         this.db = db;
     }
 
-    async getById(id: number, userId: number): Promise<Transaction | null> {
+    /* ———————————————————— Transactions ———————————————————— */
+
+    private async getTransactionById(
+        id: number,
+        userId: number,
+    ): Promise<Transaction | null> {
         return await this.db
             .select()
             .from(transactions)
@@ -47,33 +51,101 @@ export class TransactionService {
             .then((rs) => (rs.length > 0 ? transactionFromDb(rs[0]) : null));
     }
 
-    async list(opts: TransactionList, userId: number): Promise<Transaction[]> {
-        const txns = await this.db
+    async getAllRecurringTransactions(userId: number): Promise<Transaction[]> {
+        return await this.db
             .select()
             .from(transactions)
             .where(
                 and(
                     eq(transactions.userId, userId),
-                    opts.recurringOnly
-                        ? isNotNull(transactions.recurrence)
-                        : undefined,
+                    isNotNull(transactions.recurrence),
+                    isNull(transactions.recurrenceNextId),
                 ),
             )
             .then((rs) => rs.map(transactionFromDb));
-
-        return txns;
     }
+
+    async createTransaction(
+        create: TransactionCreate,
+        userId: number,
+    ): Promise<number> {
+        return await this.db
+            .insert(transactions)
+            .values({
+                userId,
+                amount: create.amount,
+                categoryId: create.categoryId,
+                date: create.date.toJSDate(),
+                description: create.description,
+                recurrence: create.recurrence
+                    ? recurrenceToDb(create.recurrence)
+                    : null,
+                recurrenceEndsAt: create.recurrence?.endsAt?.toJSDate(),
+            })
+            .$returningId()
+            .then((rs) => rs[0].id);
+    }
+
+    async updateTransaction(
+        update: TransactionUpdate,
+        userId: number,
+    ): Promise<void> {
+        const existing = await this.getTransactionById(update.id, userId);
+
+        if (!existing) {
+            // Nothing to do, no such transaction exists
+            return;
+        } else if (!existing.recurrence) {
+            // Safe to edit a non-recurring transaction directly
+            await this.db
+                .update(transactions)
+                .set({
+                    amount: update.amount,
+                    categoryId: update.categoryId,
+                    date: update.date?.toJSDate(),
+                    description: update.description,
+                })
+                .where(eq(transactions.id, existing.id));
+        } else {
+            // TODO: start new transaction today or tomorrow?
+            const clipExistingAt = DateTime.now();
+
+            // Create the new recurring transaction, directly 1 day after
+            const nextId = await this.createTransaction(
+                {
+                    date: clipExistingAt.plus({ days: 1 }),
+                    amount: update.amount ?? existing.amount,
+                    categoryId:
+                        update.categoryId !== undefined
+                            ? update.categoryId
+                            : existing.categoryId,
+                    description: update.description ?? existing.description,
+                    recurrence: update.recurrence ?? existing.recurrence,
+                },
+                existing.userId,
+            );
+
+            // And clip existing recurring transaction today
+            await this.db
+                .update(transactions)
+                .set({
+                    recurrenceEndsAt: clipExistingAt.toJSDate(),
+                    recurrenceNextId: nextId,
+                })
+                .where(eq(transactions.id, existing.id));
+
+            // TODO: decide how to handle future exceptions, if those are even allowed?
+        }
+    }
+
+    /* ———————————————————— Occurrences ———————————————————— */
 
     // TODO: maybe should be in its own service later on
     async listOccurrences(
         opts: OccurrenceList,
         userId: number,
     ): Promise<OccurrencePage> {
-        // Drizzle wants js dates, so pre-process
-        const fromDate = opts.from.toJSDate();
-        const toDate = opts.to.toJSDate();
-
-        const txnRows = await this.db
+        const rs = await this.db
             .select({
                 transaction: transactions,
                 exception: exceptions,
@@ -84,16 +156,19 @@ export class TransactionService {
                 and(
                     eq(transactions.userId, userId),
                     // Ensure all transactions don't exist after the time range ends
-                    lte(transactions.date, toDate),
+                    lte(transactions.date, opts.to.toJSDate()),
                     // Ensure recurring transactions don't end before the time range starts
                     or(
                         isNull(transactions.recurrenceEndsAt),
-                        gte(transactions.recurrenceEndsAt, fromDate),
+                        gte(
+                            transactions.recurrenceEndsAt,
+                            opts.from.toJSDate(),
+                        ),
                     ),
                     // Ensure non-recurring transactions don't exist before the time range starts
                     or(
                         isNotNull(transactions.recurrence),
-                        gte(transactions.date, fromDate),
+                        gte(transactions.date, opts.from.toJSDate()),
                     ),
                     // Filters
                     opts.categoryIds?.length
@@ -110,7 +185,7 @@ export class TransactionService {
             { transaction: Transaction; exceptionDates: DateTime[] }
         >();
 
-        txnRows.forEach((row) => {
+        rs.forEach((row) => {
             const { transaction, exception } = row;
 
             if (!txns.has(transaction.id)) {
@@ -168,82 +243,42 @@ export class TransactionService {
         occ: OccurrenceUpdate,
         userId: number,
     ): Promise<void> {
-        const txn = await this.getById(occ.transaction.id, userId);
-        if (!txn) {
-            throw new Error('Transaction not found');
-        }
-
-        if (!txn.recurrence) {
-            // This is a simple one-off transaction, or already an exception
-            await this.update(occ.transaction, userId);
-            return;
-        }
-
-        // TODO: Would be best to use a DB transaction below
-
-        const exceptionId = await this.create(
-            {
-                amount: occ.transaction.amount ?? txn.amount,
-                categoryId:
-                    // Specifically check undefined, since null is a valid option
-                    occ.transaction.categoryId !== undefined
-                        ? occ.transaction.categoryId
-                        : txn.categoryId,
-                date: occ.transaction.date ?? occ.date,
-                description: occ.transaction.description ?? txn.description,
-                recurrence: null,
-            },
+        const master = await this.getTransactionById(
+            occ.transaction.id,
             userId,
         );
+        const update = occ.transaction;
 
-        await this.createException(txn.id, exceptionId, occ.date);
-    }
+        if (!master || master.userId !== userId) {
+            throw new Error('Transaction not found');
+        } else if (!master.recurrence) {
+            // One-off occurrences treated same as editing non-recurring transaction
+            await this.updateTransaction(occ.transaction, userId);
+        } else {
+            // Create a new exception of the original recurring transaction
 
-    async create(txn: TransactionCreate, userId: number): Promise<number> {
-        return await this.db
-            .insert(transactions)
-            .values({
+            // TODO: Would be best to use a DB transaction
+            const exceptionId = await this.createTransaction(
+                {
+                    date: update.date ?? occ.date,
+                    amount: update.amount ?? master.amount,
+                    categoryId:
+                        // Specifically check undefined, since null is a valid option
+                        update.categoryId !== undefined
+                            ? update.categoryId
+                            : master.categoryId,
+                    description: update.description ?? master.description,
+                    recurrence: null,
+                },
                 userId,
-                amount: txn.amount,
-                categoryId: txn.categoryId,
-                date: txn.date.toJSDate(),
-                description: txn.description,
-                recurrence: txn.recurrence
-                    ? recurrenceToDb(txn.recurrence)
-                    : null,
-                recurrenceEndsAt: txn.recurrence?.endsAt?.toJSDate(),
-            })
-            .$returningId()
-            .then((rs) => rs[0].id);
-    }
-
-    async update(txn: TransactionUpdate, userId: number): Promise<void> {
-        await this.db
-            .update(transactions)
-            .set({
-                amount: txn.amount,
-                categoryId: txn.categoryId,
-                date: txn.date?.toJSDate(),
-                description: txn.description,
-            })
-            .where(
-                and(
-                    eq(transactions.id, txn.id),
-                    eq(transactions.userId, userId),
-                ),
             );
-    }
 
-    async createException(
-        masterId: number,
-        exceptionId: number,
-        exceptionDate: DateTime,
-    ): Promise<void> {
-        await this.db.insert(exceptions).values({
-            masterId,
-            exceptionId,
-            date: exceptionDate.toJSDate(),
-        });
+            await this.db.insert(exceptions).values({
+                masterId: master.id,
+                exceptionId,
+                date: occ.date.toJSDate(),
+            });
+        }
     }
 }
 

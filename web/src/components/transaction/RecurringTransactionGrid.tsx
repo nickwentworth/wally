@@ -1,11 +1,11 @@
-import { useTransactions } from '../../lib/transactions';
+import { useRecurringTransactions } from '../../lib/transactions';
 import { Button } from '../common';
 import { RecurringTransactionTable } from './RecurringTransactionTable';
 import { useTransactionForm } from './TransactionFormProvider';
 
 export function RecurringTransactionGrid() {
     const { open: openTxnForm } = useTransactionForm();
-    const { data: txns } = useTransactions({ recurringOnly: true });
+    const { data: txns } = useRecurringTransactions();
 
     if (!txns) {
         return <p>Loading...</p>;

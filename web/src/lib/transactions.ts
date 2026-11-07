@@ -6,15 +6,10 @@ import { occurrenceKey } from './occurrences';
 
 export const transactionKey = ['transaction'];
 
-export function useTransactions(opts: ApiInput<'/transaction/list', 'post'>) {
+export function useRecurringTransactions() {
     return useQuery({
-        queryFn: () =>
-            unwrap(
-                apiClient.POST('/transaction/list', {
-                    body: opts,
-                }),
-            ),
-        queryKey: [...transactionKey, 'list', opts],
+        queryFn: () => unwrap(apiClient.GET('/transaction/allRecurring')),
+        queryKey: [...transactionKey, 'recurring'],
     });
 }
 
@@ -60,7 +55,7 @@ export function useTransactionUpdate(opts: UseTxnUpdateOpts) {
 
 /* -------------------- Types / Constants -------------------- */
 
-export type Transaction = ApiOutput<'/transaction/list', 'post'>[number];
+export type Transaction = ApiOutput<'/transaction/allRecurring', 'get'>[number];
 
 // -------------------- Helpers -------------------- //
 

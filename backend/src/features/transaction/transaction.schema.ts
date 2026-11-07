@@ -16,11 +16,6 @@ const Description = z.string();
 
 /* ———————————————————— Input ———————————————————— */
 
-export const TransactionList = z.object({
-    recurringOnly: z.boolean().default(false),
-});
-export type TransactionList = z.infer<typeof TransactionList>;
-
 export const TransactionCreate = z.object({
     amount: Amount,
     categoryId: CategoryId,
@@ -36,6 +31,7 @@ export const TransactionUpdate = z.object({
     categoryId: CategoryId.optional(),
     date: LuxonDateTime.optional(),
     description: Description.optional(),
+    recurrence: RecurrenceJson.transform(recurrenceFromJson).optional(),
 });
 export type TransactionUpdate = z.infer<typeof TransactionUpdate>;
 
