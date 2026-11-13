@@ -1,4 +1,4 @@
-import { Occurrence } from './occurrences';
+import { Transaction } from './transactions';
 import { ordinalSuffix, sameItems } from './utils';
 
 // -------------------- Types / Constants -------------------- //
@@ -7,7 +7,7 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown
     ? Omit<T, K>
     : never;
 
-export type Recurrence = NonNullable<Occurrence['transaction']['recurrence']>;
+export type Recurrence = NonNullable<Transaction['recurrence']>;
 type RecurrenceParts = DistributiveOmit<Recurrence, 'endsAt'>;
 
 export const WEEKDAYS = [

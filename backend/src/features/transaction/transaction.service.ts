@@ -14,20 +14,20 @@ import {
 import { DateTime } from 'luxon';
 import {
     extrapolateRecurrence,
+    Recurrence,
     recurrenceFromDb,
     recurrenceToDb,
 } from './recurrence.js';
 import {
-    Transaction,
-    TransactionCreate,
-    TransactionUpdate,
-} from './transaction.schema.js';
-import {
-    OccurrencePage,
-    Occurrence,
     OccurrenceList,
+    OccurrencePage,
     OccurrenceUpdate,
-} from './occurrence.schema.js';
+    RecurringTransactionUpdate,
+    RecurringTransaction,
+    TransactionCreate,
+    Occurrence,
+} from './transaction.schema.js';
+import { OmitStrict } from '../../util/types.js';
 
 export class TransactionService {
     private db: MySql2Database;
@@ -51,20 +51,6 @@ export class TransactionService {
             .then((rs) => (rs.length > 0 ? transactionFromDb(rs[0]) : null));
     }
 
-    async getAllRecurringTransactions(userId: number): Promise<Transaction[]> {
-        return await this.db
-            .select()
-            .from(transactions)
-            .where(
-                and(
-                    eq(transactions.userId, userId),
-                    isNotNull(transactions.recurrence),
-                    isNull(transactions.recurrenceNextId),
-                ),
-            )
-            .then((rs) => rs.map(transactionFromDb));
-    }
-
     async createTransaction(
         create: TransactionCreate,
         userId: number,
@@ -86,66 +72,73 @@ export class TransactionService {
             .then((rs) => rs[0].id);
     }
 
-    async updateTransaction(
-        update: TransactionUpdate,
+    /* ———————————————————— Recurring ———————————————————— */
+
+    async getAllRecurringTransactions(
+        userId: number,
+    ): Promise<RecurringTransaction[]> {
+        return await this.db
+            .select()
+            .from(transactions)
+            .where(
+                and(
+                    eq(transactions.userId, userId),
+                    isNotNull(transactions.recurrence),
+                    isNull(transactions.recurrenceNextId),
+                ),
+            )
+            .then((rs) => rs.map(transactionFromDb))
+            .then((txns) => txns.map(toRecurringTransaction));
+    }
+
+    async updateRecurringTransaction(
+        update: RecurringTransactionUpdate,
         userId: number,
     ): Promise<void> {
         const existing = await this.getTransactionById(update.id, userId);
 
-        if (!existing) {
+        if (!existing || !existing.recurrence) {
             // Nothing to do, no such transaction exists
             return;
-        } else if (!existing.recurrence) {
-            // Safe to edit a non-recurring transaction directly
-            await this.db
-                .update(transactions)
-                .set({
-                    amount: update.amount,
-                    categoryId: update.categoryId,
-                    date: update.date?.toJSDate(),
-                    description: update.description,
-                })
-                .where(eq(transactions.id, existing.id));
-        } else {
-            // TODO: start new transaction today or tomorrow?
-            const clipExistingAt = DateTime.now();
-
-            // Create the new recurring transaction, directly 1 day after
-            const nextId = await this.createTransaction(
-                {
-                    date: clipExistingAt.plus({ days: 1 }),
-                    amount: update.amount ?? existing.amount,
-                    categoryId:
-                        update.categoryId !== undefined
-                            ? update.categoryId
-                            : existing.categoryId,
-                    description: update.description ?? existing.description,
-                    recurrence: update.recurrence ?? existing.recurrence,
-                },
-                existing.userId,
-            );
-
-            // And clip existing recurring transaction today
-            await this.db
-                .update(transactions)
-                .set({
-                    recurrenceEndsAt: clipExistingAt.toJSDate(),
-                    recurrenceNextId: nextId,
-                })
-                .where(eq(transactions.id, existing.id));
-
-            // TODO: decide how to handle future exceptions, if those are even allowed?
         }
+
+        // TODO: start new transaction today or tomorrow?
+        const clipExistingAt = DateTime.now();
+
+        // Create the new recurring transaction, directly 1 day after
+        const nextId = await this.createTransaction(
+            {
+                date: clipExistingAt.plus({ days: 1 }),
+                amount: update.amount ?? existing.amount,
+                categoryId:
+                    update.categoryId !== undefined
+                        ? update.categoryId
+                        : existing.categoryId,
+                description: update.description ?? existing.description,
+                recurrence: update.recurrence ?? existing.recurrence,
+            },
+            existing.userId,
+        );
+
+        // And clip existing recurring transaction today
+        await this.db
+            .update(transactions)
+            .set({
+                recurrenceEndsAt: clipExistingAt.toJSDate(),
+                recurrenceNextId: nextId,
+            })
+            .where(eq(transactions.id, existing.id));
+
+        // TODO: decide how to handle future exceptions, if those are even allowed?
     }
 
     /* ———————————————————— Occurrences ———————————————————— */
 
-    // TODO: maybe should be in its own service later on
     async listOccurrences(
         opts: OccurrenceList,
         userId: number,
     ): Promise<OccurrencePage> {
-        const rs = await this.db
+        const rows = await this.db
             .select({
                 transaction: transactions,
                 exception: exceptions,
@@ -180,38 +173,61 @@ export class TransactionService {
                 ),
             );
 
-        const txns = new Map<
-            number,
-            { transaction: Transaction; exceptionDates: DateTime[] }
-        >();
+        // Classify into txn -> exceptions map (or equivalent)
+        type TxnExcEntry = {
+            txn: Transaction;
+            excs: DateTime[];
+        };
+        const entries = new Map<number, TxnExcEntry>();
 
-        rs.forEach((row) => {
-            const { transaction, exception } = row;
+        rows.forEach((row) => {
+            const transaction = transactionFromDb(row.transaction);
 
-            if (!txns.has(transaction.id)) {
-                txns.set(transaction.id, {
-                    transaction: transactionFromDb(transaction),
-                    exceptionDates: [],
-                });
+            if (!entries.has(transaction.id)) {
+                entries.set(transaction.id, { txn: transaction, excs: [] });
             }
 
-            if (exception) {
-                const date = DateTime.fromJSDate(exception.date);
-                txns.get(transaction.id)?.exceptionDates.push(date);
+            if (row.exception) {
+                const date = DateTime.fromJSDate(row.exception.date);
+                entries.get(transaction.id)!.excs.push(date);
             }
         });
 
-        const occurrences = Array.from(txns.values()).flatMap((value) => {
-            const { transaction, exceptionDates } = value;
+        // Expand into a list of occurrences (not considering exceptions)
+        const occurrences = Array.from(entries.values()).flatMap<Occurrence>(
+            (entry) => {
+                const { txn, excs } = entry;
 
-            return getTransactionOccurrences(
-                transaction,
-                opts.from,
-                opts.to,
-            ).filter(
-                (occ) => !exceptionDates.some((exc) => exc.equals(occ.date)),
-            );
-        });
+                if (!txn.recurrence) {
+                    return [
+                        {
+                            id: txn.id,
+                            amount: txn.amount,
+                            categoryId: txn.categoryId,
+                            date: txn.date,
+                            description: txn.description,
+                            recurringTransactionId: null,
+                        },
+                    ];
+                }
+
+                const dates = extrapolateRecurrence(
+                    txn.recurrence,
+                    txn.date,
+                    opts.from,
+                    opts.to,
+                ).filter((date) => !excs.some((exc) => exc.equals(date))); // filter exceptions out
+
+                return dates.map<Occurrence>((date) => ({
+                    id: txn.id,
+                    amount: txn.amount,
+                    categoryId: txn.categoryId,
+                    date,
+                    description: txn.description,
+                    recurringTransactionId: txn.id,
+                }));
+            },
+        );
 
         occurrences.sort(
             (a, b) => b.date.toUnixInteger() - a.date.toUnixInteger(),
@@ -221,11 +237,11 @@ export class TransactionService {
             income = 0,
             expenses = 0;
         occurrences.forEach((occ) => {
-            net += occ.transaction.amount;
-            if (occ.transaction.amount > 0) {
-                income += occ.transaction.amount;
+            net += occ.amount;
+            if (occ.amount > 0) {
+                income += occ.amount;
             } else {
-                expenses += occ.transaction.amount;
+                expenses += occ.amount;
             }
         });
 
@@ -240,27 +256,37 @@ export class TransactionService {
     }
 
     async updateOccurrence(
-        occ: OccurrenceUpdate,
+        update: OccurrenceUpdate,
         userId: number,
     ): Promise<void> {
-        const master = await this.getTransactionById(
-            occ.transaction.id,
-            userId,
-        );
-        const update = occ.transaction;
+        const master = await this.getTransactionById(update.id, userId);
 
-        if (!master || master.userId !== userId) {
-            throw new Error('Transaction not found');
+        if (!master) {
+            // Nothing to do, no such transaction exists
+            return;
         } else if (!master.recurrence) {
-            // One-off occurrences treated same as editing non-recurring transaction
-            await this.updateTransaction(occ.transaction, userId);
+            // One-off occurrences can just update the transaction row directly
+            await this.db
+                .update(transactions)
+                .set({
+                    amount: update.amount,
+                    categoryId: update.categoryId,
+                    date: update.date?.toJSDate(),
+                    description: update.description,
+                })
+                .where(
+                    and(
+                        eq(transactions.id, update.id),
+                        eq(transactions.userId, userId),
+                    ),
+                );
         } else {
             // Create a new exception of the original recurring transaction
 
             // TODO: Would be best to use a DB transaction
             const exceptionId = await this.createTransaction(
                 {
-                    date: update.date ?? occ.date,
+                    date: update.date ?? update.occursOn,
                     amount: update.amount ?? master.amount,
                     categoryId:
                         // Specifically check undefined, since null is a valid option
@@ -276,41 +302,50 @@ export class TransactionService {
             await this.db.insert(exceptions).values({
                 masterId: master.id,
                 exceptionId,
-                date: occ.date.toJSDate(),
+                date: update.occursOn.toJSDate(),
             });
         }
     }
 }
 
-type TransactionSelect = typeof transactions.$inferSelect;
+type TransactionDb = typeof transactions.$inferSelect;
 
-function transactionFromDb(raw: TransactionSelect): Transaction {
-    const recurrence = raw.recurrence
-        ? recurrenceFromDb(raw.recurrence, raw.recurrenceEndsAt ?? undefined)
+type Transaction = OmitStrict<
+    TransactionDb,
+    'date' | 'recurrence' | 'recurrenceEndsAt'
+> & {
+    date: DateTime;
+    recurrence: Recurrence | null;
+};
+
+function transactionFromDb(t: TransactionDb): Transaction {
+    const recurrence = t.recurrence
+        ? recurrenceFromDb(t.recurrence, t.recurrenceEndsAt ?? undefined)
         : null;
 
     return {
-        id: raw.id,
-        amount: raw.amount,
-        categoryId: raw.categoryId,
-        date: DateTime.fromJSDate(raw.date),
-        description: raw.description,
+        id: t.id,
+        amount: t.amount,
+        categoryId: t.categoryId,
+        date: DateTime.fromJSDate(t.date),
+        description: t.description,
         recurrence,
-        userId: raw.userId,
+        recurrenceNextId: t.recurrenceNextId,
+        userId: t.userId,
     };
 }
 
-function getTransactionOccurrences(
-    txn: Transaction,
-    from: DateTime,
-    to: DateTime,
-): Occurrence[] {
-    const dates = txn.recurrence
-        ? extrapolateRecurrence(txn.recurrence, txn.date, from, to)
-        : [txn.date];
+function toRecurringTransaction(t: Transaction): RecurringTransaction {
+    if (!t.recurrence) {
+        throw new Error('Provided transction is not recurring');
+    }
 
-    return dates.map((date) => ({
-        date,
-        transaction: txn,
-    }));
+    return {
+        id: t.id,
+        startsAt: t.date,
+        amount: t.amount,
+        categoryId: t.categoryId,
+        description: t.description,
+        recurrence: t.recurrence,
+    };
 }

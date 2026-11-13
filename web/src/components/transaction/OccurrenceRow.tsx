@@ -1,13 +1,15 @@
 import { useCategories } from '../../lib/categories';
-import { formatDollar } from '../../lib/transactions';
+import {
+    formatDollar,
+    Occurrence,
+    useOccurrenceUpdate,
+} from '../../lib/transactions';
 import { CategoryChip } from '../category/CategoryChip';
 import { CategorySelect } from '../inputs/CategorySelect';
 import { Editable } from '../inputs/Editable';
 import { Input } from '../inputs/Input';
 import { TxnAmountInput } from '../inputs/TxnAmountInput';
-import { formatRecurrenceName } from '../../lib/recurrence';
 import { Icon, TableCell, TableRow } from '../common';
-import { Occurrence, useOccurrenceUpdate } from '../../lib/occurrences';
 
 type OccurrenceRowProps = {
     occurrence: Occurrence;
@@ -37,11 +39,9 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                     )}
                     onCommit={(d) =>
                         updateOccurrence({
-                            date: props.occurrence.date,
-                            transaction: {
-                                id: props.occurrence.transaction.id,
-                                date: d,
-                            },
+                            occursOn: props.occurrence.date,
+                            id: props.occurrence.id,
+                            date: d,
                         })
                     }
                 />
@@ -50,7 +50,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
             {/* FIXME: category dropdown on final table rows is cutoff due to overflow-hidden */}
             <TableCell>
                 <Editable
-                    value={props.occurrence.transaction.categoryId}
+                    value={props.occurrence.categoryId}
                     display={(catId) => {
                         const category = fetchCategory(catId);
                         return category ? (
@@ -72,11 +72,9 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                     )}
                     onCommit={(catId) =>
                         updateOccurrence({
-                            date: props.occurrence.date,
-                            transaction: {
-                                id: props.occurrence.transaction.id,
-                                categoryId: catId,
-                            },
+                            occursOn: props.occurrence.date,
+                            id: props.occurrence.id,
+                            categoryId: catId,
                         })
                     }
                 />
@@ -84,7 +82,7 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
 
             <TableCell align='right'>
                 <Editable
-                    value={props.occurrence.transaction.amount}
+                    value={props.occurrence.amount}
                     display={(amt) => (
                         <p className='px-3'>{formatDollar(amt)}</p>
                     )}
@@ -97,11 +95,9 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                     )}
                     onCommit={(amount) =>
                         updateOccurrence({
-                            date: props.occurrence.date,
-                            transaction: {
-                                id: props.occurrence.transaction.id,
-                                amount,
-                            },
+                            occursOn: props.occurrence.date,
+                            id: props.occurrence.id,
+                            amount,
                         })
                     }
                 />
@@ -109,19 +105,20 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
 
             <TableCell>
                 <div className='flex items-center'>
-                    {props.occurrence.transaction.recurrence && (
-                        <span className='bg-cream-100 border border-cream-200 h-6 ml-2 px-2 inline-flex items-center gap-1 rounded-full'>
+                    {props.occurrence.recurringTransactionId && (
+                        <span className='bg-cream-100 border border-cream-200 h-6 ml-3 px-1.5 inline-flex items-center gap-1 rounded-full'>
                             <Icon icon='repeat' size={12} />
-                            <span className='text-xs font-semibold'>
+                            {/* TODO: add back if we want this? */}
+                            {/* <span className='text-xs font-semibold'>
                                 {formatRecurrenceName(
                                     props.occurrence.transaction.recurrence,
                                 )}
-                            </span>
+                            </span> */}
                         </span>
                     )}
 
                     <Editable
-                        value={props.occurrence.transaction.description}
+                        value={props.occurrence.description}
                         display={(desc) => (
                             <p className='px-3 grow self-stretch content-center'>
                                 {desc}
@@ -138,11 +135,9 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                         )}
                         onCommit={(desc) =>
                             updateOccurrence({
-                                date: props.occurrence.date,
-                                transaction: {
-                                    id: props.occurrence.transaction.id,
-                                    description: desc,
-                                },
+                                occursOn: props.occurrence.date,
+                                id: props.occurrence.id,
+                                description: desc,
                             })
                         }
                     />

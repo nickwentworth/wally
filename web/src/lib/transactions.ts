@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiInput, ApiOutput, unwrap } from './api';
-import { occurrenceKey } from './occurrences';
 
 // -------------------- Hooks -------------------- //
 
@@ -10,6 +9,18 @@ export function useRecurringTransactions() {
     return useQuery({
         queryFn: () => unwrap(apiClient.GET('/transaction/allRecurring')),
         queryKey: [...transactionKey, 'recurring'],
+    });
+}
+
+export function useOccurrences(
+    opts: ApiInput<'/transaction/listOccurrences', 'post'>,
+) {
+    return useQuery({
+        queryFn: () =>
+            unwrap(
+                apiClient.POST('/transaction/listOccurrences', { body: opts }),
+            ),
+        queryKey: [...transactionKey, 'list', opts],
     });
 }
 
@@ -27,7 +38,6 @@ export function useTransactionCreate(opts: UseTxnCreateOpts) {
             ),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: transactionKey });
-            qc.invalidateQueries({ queryKey: occurrenceKey });
             opts.onSuccess?.();
         },
     });
@@ -41,14 +51,35 @@ export function useTransactionUpdate(opts: UseTxnUpdateOpts) {
     const qc = useQueryClient();
 
     return useMutation({
-        mutationFn: (transaction: ApiInput<'/transaction/update', 'post'>) =>
+        mutationFn: (
+            transaction: ApiInput<'/transaction/updateRecurring', 'post'>,
+        ) =>
             unwrap(
-                apiClient.POST('/transaction/update', { body: transaction }),
+                apiClient.POST('/transaction/updateRecurring', {
+                    body: transaction,
+                }),
             ),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: transactionKey });
-            qc.invalidateQueries({ queryKey: occurrenceKey });
             opts.onSuccess?.();
+        },
+    });
+}
+
+export function useOccurrenceUpdate() {
+    const qc = useQueryClient();
+
+    return useMutation({
+        mutationFn: (
+            input: ApiInput<'/transaction/updateOccurrence', 'post'>,
+        ) =>
+            unwrap(
+                apiClient.POST('/transaction/updateOccurrence', {
+                    body: input,
+                }),
+            ),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: transactionKey });
         },
     });
 }
@@ -56,6 +87,11 @@ export function useTransactionUpdate(opts: UseTxnUpdateOpts) {
 /* -------------------- Types / Constants -------------------- */
 
 export type Transaction = ApiOutput<'/transaction/allRecurring', 'get'>[number];
+
+export type Occurrence = ApiOutput<
+    '/transaction/listOccurrences',
+    'post'
+>['occurrences'][number];
 
 // -------------------- Helpers -------------------- //
 

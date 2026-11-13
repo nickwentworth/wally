@@ -3,7 +3,7 @@ import { Button } from '../common';
 import { DateRangePicker } from '../inputs/DateRangePicker';
 import { TxnSearchBar } from '../inputs/TxnSearchBar';
 import { DateRange, resolveDateRange } from '../../lib/dates';
-import { useOccurrences } from '../../lib/occurrences';
+import { useOccurrences } from '../../lib/transactions';
 import { OccurrenceTable } from './OccurrenceTable';
 import { Totals } from './Totals';
 import { useTransactionForm } from './TransactionFormProvider';

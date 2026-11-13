@@ -1,4 +1,4 @@
-import { Occurrence } from '../../lib/occurrences';
+import { Occurrence } from '../../lib/transactions';
 import { Loading, Table, TableHeader, TableRow } from '../common';
 import { OccurrenceRow } from './OccurrenceRow';
 
@@ -32,7 +32,8 @@ export function OccurrenceTable(props: OccurrenceTableProps) {
                 {props.occurrences.map((occ) => (
                     <OccurrenceRow
                         occurrence={occ}
-                        key={`${occ.transaction.id}_${occ.date}`}
+                        // TODO: once occurrence reference is ready, will use that
+                        key={`${occ.id}_${occ.date}`}
                     />
                 ))}
             </tbody>

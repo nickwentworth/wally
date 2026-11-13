@@ -14,7 +14,79 @@ const Amount = z.number();
 const CategoryId = z.int().nullable();
 const Description = z.string();
 
-/* ———————————————————— Input ———————————————————— */
+const IsoDate = z.string();
+
+const OccurrenceRef = z.int(); // TODO: implement
+
+/* ———————————————————— Occurrence ———————————————————— */
+
+const OccurrenceJson = z.object({
+    id: OccurrenceRef,
+    date: IsoDate,
+    amount: Amount,
+    categoryId: CategoryId,
+    description: Description,
+    recurringTransactionId: z.int().nullable(),
+});
+type OccurrenceJson = z.infer<typeof OccurrenceJson>;
+
+export type Occurrence = OmitStrict<OccurrenceJson, 'date'> & {
+    date: DateTime;
+};
+
+export function occurrenceToJson(occ: Occurrence): OccurrenceJson {
+    return {
+        ...occ,
+        date: occ.date.toISODate() ?? '',
+    };
+}
+
+export const OccurrencePageJson = z.object({
+    occurrences: OccurrenceJson.array(),
+    totals: z.object({
+        net: z.number(),
+        income: z.number(),
+        expenses: z.number(),
+    }),
+    count: z.int(),
+});
+type OccurrencePageJson = z.infer<typeof OccurrencePageJson>;
+
+export type OccurrencePage = OmitStrict<OccurrencePageJson, 'occurrences'> & {
+    occurrences: Occurrence[];
+};
+
+/* ———————————————————— Recurring ———————————————————— */
+
+export const RecurringTransactionJson = z.object({
+    id: z.int(),
+    startsAt: IsoDate,
+    amount: Amount,
+    categoryId: CategoryId,
+    description: Description,
+    recurrence: RecurrenceJson,
+});
+type RecurringTransactionJson = z.infer<typeof RecurringTransactionJson>;
+
+export type RecurringTransaction = OmitStrict<
+    RecurringTransactionJson,
+    'startsAt' | 'recurrence'
+> & {
+    startsAt: DateTime;
+    recurrence: Recurrence;
+};
+
+export function recurringTransactionToJson(
+    txn: RecurringTransaction,
+): RecurringTransactionJson {
+    return {
+        ...txn,
+        startsAt: txn.startsAt.toISODate() ?? '',
+        recurrence: recurrenceToJson(txn.recurrence),
+    };
+}
+
+/* ———————————————————— Route Inputs ———————————————————— */
 
 export const TransactionCreate = z.object({
     amount: Amount,
@@ -25,7 +97,7 @@ export const TransactionCreate = z.object({
 });
 export type TransactionCreate = z.infer<typeof TransactionCreate>;
 
-export const TransactionUpdate = z.object({
+export const RecurringTransactionUpdate = z.object({
     id: z.int(),
     amount: Amount.optional(),
     categoryId: CategoryId.optional(),
@@ -33,30 +105,27 @@ export const TransactionUpdate = z.object({
     description: Description.optional(),
     recurrence: RecurrenceJson.transform(recurrenceFromJson).optional(),
 });
-export type TransactionUpdate = z.infer<typeof TransactionUpdate>;
+export type RecurringTransactionUpdate = z.infer<
+    typeof RecurringTransactionUpdate
+>;
 
-/* ———————————————————— Output ———————————————————— */
-
-export const TransactionJson = z.object({
-    id: z.int(),
-    amount: Amount,
-    categoryId: CategoryId,
-    date: z.string(),
-    description: Description,
-    recurrence: RecurrenceJson.nullable(),
+export const OccurrenceList = z.object({
+    from: LuxonDateTime,
+    to: LuxonDateTime,
+    categoryIds: z.number().array().optional(),
+    search: z.string().optional(),
+    offset: z.int().min(0).default(0),
+    limit: z.int().min(1).max(100).default(50),
 });
-export type TransactionJson = z.infer<typeof TransactionJson>;
+export type OccurrenceList = z.infer<typeof OccurrenceList>;
 
-export type Transaction = OmitStrict<TransactionJson, 'date' | 'recurrence'> & {
-    date: DateTime;
-    recurrence: Recurrence | null;
-    userId: number;
-};
-
-export function transactionToJson(txn: Transaction): TransactionJson {
-    return {
-        ...txn,
-        date: txn.date.toISODate() ?? '',
-        recurrence: txn.recurrence ? recurrenceToJson(txn.recurrence) : null,
-    };
-}
+export const OccurrenceUpdate = z.object({
+    // TODO: occurs on not technically needed, once occurence references are setup
+    occursOn: LuxonDateTime,
+    id: OccurrenceRef,
+    amount: Amount.optional(),
+    categoryId: CategoryId.optional(),
+    date: LuxonDateTime.optional(),
+    description: Description.optional(),
+});
+export type OccurrenceUpdate = z.infer<typeof OccurrenceUpdate>;

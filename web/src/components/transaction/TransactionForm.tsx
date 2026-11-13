@@ -173,7 +173,7 @@ function formModeToValues(mode: TransactionFormMode): TransactionFormData {
                     {
                         amount: txn.amount,
                         categoryId: txn.categoryId,
-                        date: txn.date,
+                        date: txn.startsAt,
                         description: txn.description,
                         isRecurring: true,
                         recurrence: txn.recurrence
