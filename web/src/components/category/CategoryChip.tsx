@@ -1,5 +1,5 @@
 import { Category } from '../../lib/categories';
-import { Icon, Text } from '../common';
+import { Icon } from '../common';
 
 type CategoryChipProps = {
     category: Category;

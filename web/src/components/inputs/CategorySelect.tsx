@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { Category, useCategories } from '../../lib/categories';
 import { CategoryIcon } from '../category/CategoryIcon';
 import { Icon } from '../common';
