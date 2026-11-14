@@ -1,10 +1,10 @@
-import { Transaction } from '../../lib/transactions';
+import { RecurringTransaction } from '../../lib/transactions';
 import { Table, TableHeader, TableRow, Text } from '../common';
 import { RecurringTransactionRow } from './RecurringTransactionRow';
 import { useTransactionForm } from './TransactionFormProvider';
 
 type RecurringTransactionTableProps = {
-    transactions: Transaction[];
+    transactions: RecurringTransaction[];
 };
 
 export function RecurringTransactionTable(

@@ -101,7 +101,6 @@ export const RecurringTransactionUpdate = z.object({
     id: z.int(),
     amount: Amount.optional(),
     categoryId: CategoryId.optional(),
-    date: LuxonDateTime.optional(),
     description: Description.optional(),
     recurrence: RecurrenceJson.transform(recurrenceFromJson).optional(),
 });

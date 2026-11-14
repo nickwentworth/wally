@@ -24,7 +24,9 @@ export type TransactionFormEntryData = z.infer<typeof TransactionFormEntryData>;
 
 type TransactionFormEntryProps = {
     lens: Lens<TransactionFormEntryData>;
-    variant: 'generic' | 'compact' | 'recurring';
+    compact?: boolean;
+    hideDate?: boolean;
+    hideRecurToggle?: boolean;
     onDelete?: () => void;
 };
 
@@ -42,7 +44,7 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
                             <TxnAmountInput
                                 amount={field.value}
                                 setAmount={field.onChange}
-                                size={props.variant === 'compact' ? 'md' : 'lg'}
+                                size={props.compact ? 'md' : 'lg'}
                             />
                         )}
                     />
@@ -55,7 +57,7 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
                 )}
             </div>
 
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-flow-col auto-cols-fr gap-4'>
                 <label className='flex flex-col gap-2'>
                     <Text variant='uppercase'>Category</Text>
                     <Controller
@@ -69,17 +71,21 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
                     />
                 </label>
 
-                <label className='flex flex-col gap-2'>
-                    <Text variant='uppercase'>Date</Text>
-                    <Input
-                        type='date'
-                        {...props.lens
-                            .focus('date')
-                            .interop((ctrl, name) =>
-                                ctrl.register(name, { required: true }),
-                            )}
-                    />
-                </label>
+                {!props.hideDate && (
+                    <label className='flex flex-col gap-2'>
+                        <Text variant='uppercase'>
+                            {isRecurring ? 'Starts on' : 'Date'}
+                        </Text>
+                        <Input
+                            type='date'
+                            {...props.lens
+                                .focus('date')
+                                .interop((ctrl, name) =>
+                                    ctrl.register(name, { required: true }),
+                                )}
+                        />
+                    </label>
+                )}
             </div>
 
             <label className='flex flex-col gap-2'>
@@ -88,18 +94,18 @@ export function TransactionFormEntry(props: TransactionFormEntryProps) {
                     variant='textarea'
                     className='resize-none'
                     placeholder='Add a note...'
-                    rows={props.variant === 'compact' ? 1 : 3}
+                    rows={props.compact ? 1 : 3}
                     {...props.lens
                         .focus('description')
                         .interop((ctrl, name) => ctrl.register(name))}
                 />
             </label>
 
-            {props.variant !== 'compact' && (
+            {!props.compact && (
                 <label className='flex flex-col gap-2'>
                     <Text variant='uppercase'>Recurring</Text>
 
-                    {props.variant === 'generic' && (
+                    {!props.hideRecurToggle && (
                         <div className='flex items-center gap-2'>
                             <Controller
                                 {...props.lens.focus('isRecurring').interop()}

@@ -1,12 +1,12 @@
 import z from 'zod';
 import {
-    Transaction,
+    RecurringTransaction,
     useTransactionCreate,
     useTransactionUpdate,
 } from '../../lib/transactions';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { todayDateInputStr } from '../../lib/dates';
-import { Button, Icon } from '../common';
+import { Button, Icon, Text } from '../common';
 import {
     TransactionFormEntry,
     TransactionFormEntryData,
@@ -31,8 +31,6 @@ const EMPTY_TRANSACTION_FORM_ENTRY = {
     },
 } satisfies TransactionFormEntryData;
 
-const EMPTY_TRANSACTION_RECURRENCE = EMPTY_TRANSACTION_FORM_ENTRY['recurrence'];
-
 const TransactionFormData = z.object({
     transactions: z.array(TransactionFormEntryData).min(1),
 });
@@ -41,7 +39,7 @@ type TransactionFormData = z.infer<typeof TransactionFormData>;
 export type TransactionFormMode =
     | { type: 'create' }
     | { type: 'createRecurring' }
-    | { type: 'editRecurring'; transaction: Transaction };
+    | { type: 'editRecurring'; transaction: RecurringTransaction };
 
 type TransactionFormProps = TransactionFormMode & {
     onClose: () => void;
@@ -70,21 +68,18 @@ export function TransactionForm(props: TransactionFormProps) {
         // TODO: allow creating many, currently backend only supports one at a time
         const txn = data.transactions[0];
 
-        const recurrence = txn.isRecurring
-            ? recurrenceFromFormValues(txn.recurrence)
-            : null;
-
         if (props.type === 'create' || props.type === 'createRecurring') {
             createTxn.mutate({
                 ...txn,
-                recurrence,
+                recurrence: txn.isRecurring
+                    ? recurrenceFromFormValues(txn.recurrence)
+                    : null,
             });
         } else {
             updateTxn.mutate({
                 id: props.transaction.id,
                 ...txn,
-                // TODO: pass once backend supports updating recurring transactions
-                // recurrence,
+                recurrence: recurrenceFromFormValues(txn.recurrence),
             });
         }
     });
@@ -93,9 +88,9 @@ export function TransactionForm(props: TransactionFormProps) {
         <form className='h-full flex flex-col' onSubmit={onSubmit}>
             <div className='border-cream-200 border-b flex justify-between px-6 py-4'>
                 <h2>
-                    {props.type === 'create' && 'Add Transaction'}
-                    {props.type === 'createRecurring' && 'Add Recurrence'}
-                    {props.type === 'editRecurring' && 'Edit Recurrence'}
+                    {props.type === 'create' && 'Add transaction'}
+                    {props.type === 'createRecurring' && 'Add recurrence'}
+                    {props.type === 'editRecurring' && 'Edit recurrence'}
                 </h2>
 
                 <Button variant='ghost' onClick={props.onClose}>
@@ -106,7 +101,8 @@ export function TransactionForm(props: TransactionFormProps) {
             <div className='grow flex flex-col gap-6 p-6 overflow-auto'>
                 <TransactionFormEntry
                     lens={lens.focus('transactions.0')}
-                    variant={props.type === 'create' ? 'generic' : 'recurring'}
+                    hideDate={props.type === 'editRecurring'}
+                    hideRecurToggle={props.type !== 'create'}
                 />
 
                 {transactions.fields.length > 1 && <hr />}
@@ -120,7 +116,7 @@ export function TransactionForm(props: TransactionFormProps) {
                         >
                             <TransactionFormEntry
                                 lens={lens.focus(`transactions.${idx}`)}
-                                variant='compact'
+                                compact
                                 onDelete={() => transactions.remove(idx)}
                             />
                         </div>
@@ -141,10 +137,21 @@ export function TransactionForm(props: TransactionFormProps) {
                 )}
             </div>
 
-            <div className='border-cream-200 border-t flex justify-end gap-2 px-6 py-4'>
-                <Button variant='ghost' onClick={props.onClose}>
+            <div className='border-cream-200 border-t flex items-center gap-2 px-6 py-4'>
+                {transactions.fields.length > 1 && (
+                    <Text variant='hint'>
+                        {transactions.fields.length} transactions
+                    </Text>
+                )}
+
+                <Button
+                    className='ml-auto'
+                    variant='ghost'
+                    onClick={props.onClose}
+                >
                     Cancel
                 </Button>
+
                 <Button variant='primary' left='check' type='submit'>
                     Save
                 </Button>
@@ -176,25 +183,23 @@ function formModeToValues(mode: TransactionFormMode): TransactionFormData {
                         date: txn.startsAt,
                         description: txn.description,
                         isRecurring: true,
-                        recurrence: txn.recurrence
-                            ? {
-                                  rate: txn.recurrence.rate,
-                                  period: txn.recurrence.period,
-                                  daysOfWeek:
-                                      txn.recurrence.period === 'weekly'
-                                          ? txn.recurrence.daysOfWeek
-                                          : [],
-                                  daysOfMonth:
-                                      txn.recurrence.period === 'monthly'
-                                          ? txn.recurrence.daysOfMonth
-                                          : [],
-                                  daysOfYear:
-                                      txn.recurrence.period === 'yearly'
-                                          ? txn.recurrence.daysOfYear
-                                          : [],
-                                  endsAt: txn.recurrence.endsAt,
-                              }
-                            : EMPTY_TRANSACTION_RECURRENCE,
+                        recurrence: {
+                            rate: txn.recurrence.rate,
+                            period: txn.recurrence.period,
+                            daysOfWeek:
+                                txn.recurrence.period === 'weekly'
+                                    ? txn.recurrence.daysOfWeek
+                                    : [],
+                            daysOfMonth:
+                                txn.recurrence.period === 'monthly'
+                                    ? txn.recurrence.daysOfMonth
+                                    : [],
+                            daysOfYear:
+                                txn.recurrence.period === 'yearly'
+                                    ? txn.recurrence.daysOfYear
+                                    : [],
+                            endsAt: txn.recurrence.endsAt,
+                        },
                     },
                 ],
             };

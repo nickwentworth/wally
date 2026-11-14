@@ -86,7 +86,10 @@ export function useOccurrenceUpdate() {
 
 /* -------------------- Types / Constants -------------------- */
 
-export type Transaction = ApiOutput<'/transaction/allRecurring', 'get'>[number];
+export type RecurringTransaction = ApiOutput<
+    '/transaction/allRecurring',
+    'get'
+>[number];
 
 export type Occurrence = ApiOutput<
     '/transaction/listOccurrences',

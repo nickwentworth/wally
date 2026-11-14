@@ -1,11 +1,11 @@
 import { useCategories } from '../../lib/categories';
 import { formatRecurrenceName } from '../../lib/recurrence';
-import { formatDollar, Transaction } from '../../lib/transactions';
+import { formatDollar, RecurringTransaction } from '../../lib/transactions';
 import { CategoryIcon } from '../category/CategoryIcon';
 import { Icon, TableCell, TableRow } from '../common';
 
 type RecurringTransactionRowProps = {
-    transaction: Transaction;
+    transaction: RecurringTransaction;
     onClick: () => void;
 };
 

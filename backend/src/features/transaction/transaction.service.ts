@@ -102,7 +102,7 @@ export class TransactionService {
             return;
         }
 
-        // TODO: start new transaction today or tomorrow?
+        // FIXME: uses server's UTC, should be client's date
         const clipExistingAt = DateTime.now();
 
         // Create the new recurring transaction, directly 1 day after
