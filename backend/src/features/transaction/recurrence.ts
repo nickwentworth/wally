@@ -184,3 +184,19 @@ export function extrapolateRecurrence(
     }
     return dates;
 }
+
+export function estimateYearlyOccurrences(recurrence: Recurrence): number {
+    switch (recurrence.period) {
+        case 'daily':
+            return (1 / recurrence.rate) * 365;
+
+        case 'weekly':
+            return (recurrence.daysOfWeek.length / recurrence.rate) * 52;
+
+        case 'monthly':
+            return (recurrence.daysOfMonth.length / recurrence.rate) * 12;
+
+        case 'yearly':
+            return recurrence.daysOfYear.length / recurrence.rate;
+    }
+}

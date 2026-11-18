@@ -18,6 +18,12 @@ const IsoDate = z.string();
 
 const OccurrenceRef = z.int(); // TODO: implement
 
+const Totals = z.object({
+    net: Amount,
+    income: Amount,
+    expenses: Amount,
+});
+
 /* ———————————————————— Occurrence ———————————————————— */
 
 const OccurrenceJson = z.object({
@@ -43,11 +49,7 @@ export function occurrenceToJson(occ: Occurrence): OccurrenceJson {
 
 export const OccurrencePageJson = z.object({
     occurrences: OccurrenceJson.array(),
-    totals: z.object({
-        net: z.number(),
-        income: z.number(),
-        expenses: z.number(),
-    }),
+    totals: Totals,
     count: z.int(),
 });
 type OccurrencePageJson = z.infer<typeof OccurrencePageJson>;
@@ -85,6 +87,21 @@ export function recurringTransactionToJson(
         recurrence: recurrenceToJson(txn.recurrence),
     };
 }
+
+export const RecurringTransactionListResultJson = z.object({
+    transactions: RecurringTransactionJson.array(),
+    totals: Totals,
+});
+type RecurringTransactionListResultJson = z.infer<
+    typeof RecurringTransactionListResultJson
+>;
+
+export type RecurringTransactionListResult = OmitStrict<
+    RecurringTransactionListResultJson,
+    'transactions'
+> & {
+    transactions: RecurringTransaction[];
+};
 
 /* ———————————————————— Route Inputs ———————————————————— */
 

@@ -8,6 +8,7 @@ import {
     TransactionCreate,
     RecurringTransactionJson,
     recurringTransactionToJson,
+    RecurringTransactionListResultJson,
 } from './transaction.schema.js';
 
 export const transactionRouter = {
@@ -24,14 +25,19 @@ export const transactionRouter = {
 
     allRecurring: authedProcedure
         .route({ method: 'GET' })
-        .output(RecurringTransactionJson.array())
+        .output(RecurringTransactionListResultJson)
         .handler(async ({ context }) => {
-            const txns =
+            const result =
                 await context.services.transaction.getAllRecurringTransactions(
                     context.user.id,
                 );
 
-            return txns.map(recurringTransactionToJson);
+            return {
+                ...result,
+                transactions: result.transactions.map(
+                    recurringTransactionToJson,
+                ),
+            };
         }),
 
     updateRecurring: authedProcedure

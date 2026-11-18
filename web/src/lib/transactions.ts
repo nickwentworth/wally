@@ -89,7 +89,7 @@ export function useOccurrenceUpdate() {
 export type RecurringTransaction = ApiOutput<
     '/transaction/allRecurring',
     'get'
->[number];
+>['transactions'][number];
 
 export type Occurrence = ApiOutput<
     '/transaction/listOccurrences',

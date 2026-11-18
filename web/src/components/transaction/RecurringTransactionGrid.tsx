@@ -1,18 +1,12 @@
 import { useRecurringTransactions } from '../../lib/transactions';
-import { Button } from '../common';
+import { Button, Loading } from '../common';
 import { RecurringTransactionTable } from './RecurringTransactionTable';
+import { Totals } from './Totals';
 import { useTransactionForm } from './TransactionFormProvider';
 
 export function RecurringTransactionGrid() {
     const { open: openTxnForm } = useTransactionForm();
-    const { data: txns } = useRecurringTransactions();
-
-    if (!txns) {
-        return <p>Loading...</p>;
-    }
-
-    const incomes = txns.filter((txn) => txn.amount > 0);
-    const expenses = txns.filter((txn) => txn.amount < 0);
+    const recurringTxnQuery = useRecurringTransactions();
 
     return (
         <div className='flex flex-col gap-4'>
@@ -34,8 +28,36 @@ export function RecurringTransactionGrid() {
                 </Button>
             </div>
 
-            <RecurringTransactionTable transactions={incomes} />
-            <RecurringTransactionTable transactions={expenses} />
+            <Totals
+                net={recurringTxnQuery.data?.totals.net}
+                income={recurringTxnQuery.data?.totals.income}
+                expenses={recurringTxnQuery.data?.totals.expenses}
+                prefix='Est. Monthly'
+            />
+
+            {recurringTxnQuery.isLoading && (
+                <div className='flex justify-center items-center gap-1'>
+                    <Loading variant='spin' size='md' />
+                    Fetching recurrences
+                </div>
+            )}
+            {recurringTxnQuery.isError && (
+                <p>{recurringTxnQuery.error.message}</p>
+            )}
+            {recurringTxnQuery.isSuccess && (
+                <>
+                    <RecurringTransactionTable
+                        transactions={recurringTxnQuery.data.transactions.filter(
+                            (txn) => txn.amount > 0,
+                        )}
+                    />
+                    <RecurringTransactionTable
+                        transactions={recurringTxnQuery.data.transactions.filter(
+                            (txn) => txn.amount < 0,
+                        )}
+                    />
+                </>
+            )}
         </div>
     );
 }

@@ -13,6 +13,7 @@ import {
 } from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import {
+    estimateYearlyOccurrences,
     extrapolateRecurrence,
     Recurrence,
     recurrenceFromDb,
@@ -26,6 +27,7 @@ import {
     RecurringTransaction,
     TransactionCreate,
     Occurrence,
+    RecurringTransactionListResult,
 } from './transaction.schema.js';
 import { OmitStrict } from '../../util/types.js';
 
@@ -76,19 +78,38 @@ export class TransactionService {
 
     async getAllRecurringTransactions(
         userId: number,
-    ): Promise<RecurringTransaction[]> {
-        return await this.db
-            .select()
+    ): Promise<RecurringTransactionListResult> {
+        const rows = await this.db
+            .select({
+                transaction: transactions,
+                exception: exceptions,
+            })
             .from(transactions)
+            .leftJoin(exceptions, eq(transactions.id, exceptions.masterId))
             .where(
                 and(
                     eq(transactions.userId, userId),
                     isNotNull(transactions.recurrence),
                     isNull(transactions.recurrenceNextId),
                 ),
-            )
-            .then((rs) => rs.map(transactionFromDb))
-            .then((txns) => txns.map(toRecurringTransaction));
+            );
+
+        // FIXME: this also should be in client's TZ
+        const from = DateTime.now();
+        const to = from.plus({ months: 1 }); // TODO: should be configurable, week/month/year in advance
+
+        const occurrences = expandOccurrences(rows, from, to);
+        const totals = calculateTotals(occurrences);
+
+        const txns = rows
+            .map((row) => row.transaction)
+            .map(transactionFromDb)
+            .map(toRecurringTransaction);
+
+        return {
+            transactions: txns,
+            totals,
+        };
     }
 
     async updateRecurringTransaction(
@@ -173,84 +194,18 @@ export class TransactionService {
                 ),
             );
 
-        // Classify into txn -> exceptions map (or equivalent)
-        type TxnExcEntry = {
-            txn: Transaction;
-            excs: DateTime[];
-        };
-        const entries = new Map<number, TxnExcEntry>();
-
-        rows.forEach((row) => {
-            const transaction = transactionFromDb(row.transaction);
-
-            if (!entries.has(transaction.id)) {
-                entries.set(transaction.id, { txn: transaction, excs: [] });
-            }
-
-            if (row.exception) {
-                const date = DateTime.fromJSDate(row.exception.date);
-                entries.get(transaction.id)!.excs.push(date);
-            }
-        });
-
-        // Expand into a list of occurrences (not considering exceptions)
-        const occurrences = Array.from(entries.values()).flatMap<Occurrence>(
-            (entry) => {
-                const { txn, excs } = entry;
-
-                if (!txn.recurrence) {
-                    return [
-                        {
-                            id: txn.id,
-                            amount: txn.amount,
-                            categoryId: txn.categoryId,
-                            date: txn.date,
-                            description: txn.description,
-                            recurringTransactionId: null,
-                        },
-                    ];
-                }
-
-                const dates = extrapolateRecurrence(
-                    txn.recurrence,
-                    txn.date,
-                    opts.from,
-                    opts.to,
-                ).filter((date) => !excs.some((exc) => exc.equals(date))); // filter exceptions out
-
-                return dates.map<Occurrence>((date) => ({
-                    id: txn.id,
-                    amount: txn.amount,
-                    categoryId: txn.categoryId,
-                    date,
-                    description: txn.description,
-                    recurringTransactionId: txn.id,
-                }));
-            },
-        );
+        const occurrences = expandOccurrences(rows, opts.from, opts.to);
 
         occurrences.sort(
             (a, b) => b.date.toUnixInteger() - a.date.toUnixInteger(),
         );
-
-        let net = 0,
-            income = 0,
-            expenses = 0;
-        occurrences.forEach((occ) => {
-            net += occ.amount;
-            if (occ.amount > 0) {
-                income += occ.amount;
-            } else {
-                expenses += occ.amount;
-            }
-        });
 
         return {
             occurrences: occurrences.slice(
                 opts.offset,
                 opts.offset + opts.limit,
             ),
-            totals: { net, income, expenses },
+            totals: calculateTotals(occurrences),
             count: occurrences.length,
         };
     }
@@ -318,6 +273,11 @@ type Transaction = OmitStrict<
     recurrence: Recurrence | null;
 };
 
+type TransactionWithExceptionDb = {
+    transaction: typeof transactions.$inferSelect;
+    exception: typeof exceptions.$inferSelect | null;
+};
+
 function transactionFromDb(t: TransactionDb): Transaction {
     const recurrence = t.recurrence
         ? recurrenceFromDb(t.recurrence, t.recurrenceEndsAt ?? undefined)
@@ -348,4 +308,90 @@ function toRecurringTransaction(t: Transaction): RecurringTransaction {
         description: t.description,
         recurrence: t.recurrence,
     };
+}
+
+function expandOccurrences(
+    rows: TransactionWithExceptionDb[],
+    from: DateTime,
+    to: DateTime,
+): Occurrence[] {
+    // Classify into txn -> exceptions map (or equivalent)
+    type TxnExcEntry = {
+        txn: Transaction;
+        excs: DateTime[];
+    };
+
+    const entries = new Map<number, TxnExcEntry>();
+
+    rows.forEach((row) => {
+        const transaction = transactionFromDb(row.transaction);
+
+        if (!entries.has(transaction.id)) {
+            entries.set(transaction.id, { txn: transaction, excs: [] });
+        }
+
+        if (row.exception) {
+            const date = DateTime.fromJSDate(row.exception.date);
+            entries.get(transaction.id)!.excs.push(date);
+        }
+    });
+
+    // Expand into a list of occurrences (not considering exceptions)
+    return Array.from(entries.values()).flatMap((entry) => {
+        const { txn, excs } = entry;
+
+        if (!txn.recurrence) {
+            return [
+                {
+                    id: txn.id,
+                    amount: txn.amount,
+                    categoryId: txn.categoryId,
+                    date: txn.date,
+                    description: txn.description,
+                    recurringTransactionId: null,
+                },
+            ];
+        }
+
+        const dates = extrapolateRecurrence(
+            txn.recurrence,
+            txn.date,
+            from,
+            to,
+        ).filter((date) => !excs.some((exc) => exc.equals(date))); // filter exceptions out
+
+        return dates.map<Occurrence>((date) => ({
+            id: txn.id,
+            amount: txn.amount,
+            categoryId: txn.categoryId,
+            date,
+            description: txn.description,
+            recurringTransactionId: txn.id,
+        }));
+    });
+}
+
+type OccurrenceTotals = {
+    net: number;
+    income: number;
+    expenses: number;
+};
+
+function calculateTotals(occurrences: Occurrence[]): OccurrenceTotals {
+    const totals = {
+        net: 0,
+        income: 0,
+        expenses: 0,
+    } satisfies OccurrenceTotals;
+
+    occurrences.forEach((occ) => {
+        totals.net += occ.amount;
+        if (occ.amount > 0) {
+            totals.income += occ.amount;
+        } else {
+            totals.expenses += occ.amount;
+        }
+    });
+
+    return totals;
 }
