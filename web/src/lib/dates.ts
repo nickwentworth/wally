@@ -53,27 +53,48 @@ export function todayDateInputStr() {
     return now.toLocaleDateString('en-CA');
 }
 
-function startOfWeekInputStr() {
+export function startOfWeekInputStr() {
     const now = new Date();
-    const weekday = now.getDay(); // ranges from 1 = Monday to 7 = Sunday
+    const weekday = now.getDay(); // ranges from 0 = Sunday to 6 = Saturday
 
-    if (weekday !== 7) {
-        // Only go back if we're not on Sunday already
-        now.setHours(weekday * -24);
-    }
+    const target = new Date(now);
+    target.setHours(weekday * -24);
 
-    return now.toLocaleDateString('en-CA');
+    return target.toLocaleDateString('en-CA');
 }
 
-function startOfMonthInputStr() {
+export function endOfWeekInputStr() {
     const now = new Date();
-    now.setDate(1);
-    return now.toLocaleDateString('en-CA');
+    const weekday = now.getDay(); // ranges from 0 = Sunday to 6 = Saturday
+    const daysLeft = 6 - weekday;
+
+    const target = new Date(now);
+    target.setHours(daysLeft * 24);
+
+    return target.toLocaleDateString('en-CA');
 }
 
-function startOfYearInputStr() {
+export function startOfMonthInputStr() {
     const now = new Date();
-    now.setDate(1);
-    now.setMonth(0);
-    return now.toLocaleDateString('en-CA');
+    const target = new Date(now.getFullYear(), now.getMonth(), 1);
+    return target.toLocaleDateString('en-CA');
+}
+
+export function endOfMonthInputStr() {
+    const now = new Date();
+    // Passing day = 0 rolls back to the previous month's last day
+    const target = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return target.toLocaleDateString('en-CA');
+}
+
+export function startOfYearInputStr() {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), 0, 1);
+    return target.toLocaleDateString('en-CA');
+}
+
+export function endOfYearInputStr() {
+    const now = new Date();
+    const target = new Date(now.getFullYear(), 11, 31);
+    return target.toLocaleDateString('en-CA');
 }

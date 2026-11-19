@@ -28,6 +28,7 @@ import {
     TransactionCreate,
     Occurrence,
     RecurringTransactionListResult,
+    RecurringTransactionGet,
 } from './transaction.schema.js';
 import { OmitStrict } from '../../util/types.js';
 
@@ -77,6 +78,7 @@ export class TransactionService {
     /* ———————————————————— Recurring ———————————————————— */
 
     async getAllRecurringTransactions(
+        opts: RecurringTransactionGet,
         userId: number,
     ): Promise<RecurringTransactionListResult> {
         const rows = await this.db
@@ -94,11 +96,7 @@ export class TransactionService {
                 ),
             );
 
-        // FIXME: this also should be in client's TZ
-        const from = DateTime.now();
-        const to = from.plus({ months: 1 }); // TODO: should be configurable, week/month/year in advance
-
-        const occurrences = expandOccurrences(rows, from, to);
+        const occurrences = expandOccurrences(rows, opts.from, opts.to);
         const totals = calculateTotals(occurrences);
 
         const txns = rows

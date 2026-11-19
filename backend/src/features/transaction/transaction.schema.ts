@@ -114,6 +114,12 @@ export const TransactionCreate = z.object({
 });
 export type TransactionCreate = z.infer<typeof TransactionCreate>;
 
+export const RecurringTransactionGet = z.object({
+    from: LuxonDateTime,
+    to: LuxonDateTime,
+});
+export type RecurringTransactionGet = z.infer<typeof RecurringTransactionGet>;
+
 export const RecurringTransactionUpdate = z.object({
     id: z.int(),
     amount: Amount.optional(),

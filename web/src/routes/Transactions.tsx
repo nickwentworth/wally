@@ -43,7 +43,12 @@ export function Transactions() {
                 )}
 
                 <div className='flex flex-col gap-4'>
-                    <Tabs tabs={TXN_TABS} active={tab} onChange={setTab} />
+                    <Tabs
+                        tabs={TXN_TABS}
+                        active={tab}
+                        onChange={setTab}
+                        variant='underline'
+                    />
 
                     {tabs[tab]}
                 </div>

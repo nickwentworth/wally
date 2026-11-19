@@ -5,10 +5,13 @@ import { apiClient, ApiInput, ApiOutput, unwrap } from './api';
 
 export const transactionKey = ['transaction'];
 
-export function useRecurringTransactions() {
+export function useRecurringTransactions(
+    opts: ApiInput<'/transaction/allRecurring', 'post'>,
+) {
     return useQuery({
-        queryFn: () => unwrap(apiClient.GET('/transaction/allRecurring')),
-        queryKey: [...transactionKey, 'recurring'],
+        queryFn: () =>
+            unwrap(apiClient.POST('/transaction/allRecurring', { body: opts })),
+        queryKey: [...transactionKey, 'recurring', opts],
     });
 }
 
@@ -88,7 +91,7 @@ export function useOccurrenceUpdate() {
 
 export type RecurringTransaction = ApiOutput<
     '/transaction/allRecurring',
-    'get'
+    'post'
 >['transactions'][number];
 
 export type Occurrence = ApiOutput<
