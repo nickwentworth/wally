@@ -13,19 +13,54 @@ export function useCategories() {
     });
 }
 
-type UseCategorySaveOpts = {
+type UseCategoryCreateOpts = {
     onSuccess?: () => void;
 };
 
-export function useCategorySave(opts: UseCategorySaveOpts) {
+export function useCategoryCreate(opts: UseCategoryCreateOpts) {
     const qc = useQueryClient();
     return useMutation({
-        mutationFn: (category: ApiInput<'/category/save', 'post'>) =>
-            unwrap(apiClient.POST('/category/save', { body: category })),
+        mutationFn: (category: ApiInput<'/category/create', 'post'>) =>
+            unwrap(apiClient.POST('/category/create', { body: category })),
         onSuccess: () => {
             qc.invalidateQueries({ queryKey: categoryKey });
             opts.onSuccess?.();
         },
+    });
+}
+
+type UseCategoryUpdateOpts = {
+    onSuccess?: () => void;
+};
+
+export function useCategoryUpdate(opts: UseCategoryUpdateOpts) {
+    const qc = useQueryClient();
+    return useMutation({
+        mutationFn: (category: ApiInput<'/category/update', 'post'>) =>
+            unwrap(apiClient.POST('/category/update', { body: category })),
+        onSuccess: () => {
+            qc.invalidateQueries({ queryKey: categoryKey });
+            opts.onSuccess?.();
+        },
+    });
+}
+
+type CategoryMoveVars = {
+    input: ApiInput<'/category/move', 'post'>;
+    reordered: Category[];
+};
+
+export function useCategoryMove() {
+    const qc = useQueryClient();
+
+    return useMutation({
+        mutationFn: (vars: CategoryMoveVars) =>
+            unwrap(apiClient.POST('/category/move', { body: vars.input })),
+
+        // Provide updated ordering for react to handle re-renders correctly
+        onMutate: (vars) => qc.setQueryData(categoryKey, vars.reordered),
+
+        onSettled: () => qc.invalidateQueries({ queryKey: categoryKey }),
     });
 }
 

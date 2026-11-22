@@ -8,7 +8,8 @@ import {
     CATEGORY_ICONS,
     tryGetCategoryColor,
     useCategoryDelete,
-    useCategorySave,
+    useCategoryCreate,
+    useCategoryUpdate,
 } from '../../lib/categories';
 import { Input } from '../inputs/Input';
 
@@ -42,7 +43,8 @@ export function CategoryForm(props: CategoryFormProps) {
             },
         });
 
-    const saveCategory = useCategorySave({ onSuccess: props.onSubmit });
+    const createCategory = useCategoryCreate({ onSuccess: props.onSubmit });
+    const updateCategory = useCategoryUpdate({ onSuccess: props.onSubmit });
     const deleteCategory = useCategoryDelete({ onSuccess: props.onCancel });
 
     const color = watch('color');
@@ -50,15 +52,23 @@ export function CategoryForm(props: CategoryFormProps) {
 
     const onSubmit = handleSubmit((raw: any) => {
         const data = CategoryFormData.parse(raw);
-        console.log(data);
 
-        saveCategory.mutate({
-            name: data.name,
-            bgColor: data.color.bg,
-            fgColor: data.color.fg,
-            icon: data.icon,
-            id: props.category?.id,
-        });
+        if (props.category) {
+            updateCategory.mutate({
+                id: props.category.id,
+                name: data.name,
+                bgColor: data.color.bg,
+                fgColor: data.color.fg,
+                icon: data.icon,
+            });
+        } else {
+            createCategory.mutate({
+                name: data.name,
+                bgColor: data.color.bg,
+                fgColor: data.color.fg,
+                icon: data.icon,
+            });
+        }
     });
 
     const categoryId = props.category?.id;

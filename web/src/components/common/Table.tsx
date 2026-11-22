@@ -71,6 +71,7 @@ type TableCellProps = React.PropsWithChildren<{
     align?: 'left' | 'center' | 'right';
     colSpan?: number;
     className?: string;
+    ref?: React.Ref<HTMLTableCellElement>;
 }>;
 
 export function TableCell(props: TableCellProps) {
@@ -88,6 +89,7 @@ export function TableCell(props: TableCellProps) {
                 props.className,
             )}
             colSpan={props.colSpan}
+            ref={props.ref}
         >
             {props.children}
         </td>

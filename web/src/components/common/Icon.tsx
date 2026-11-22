@@ -21,6 +21,7 @@ import {
     LayoutGrid,
     ChevronRight,
     LoaderCircle,
+    GripVertical,
 } from 'lucide-react';
 import { CategoryIconName } from '../../lib/categories';
 
@@ -48,6 +49,7 @@ const ICONS = {
     settings: Settings,
     receipt: Receipt,
     tag: Tag,
+    grip: GripVertical,
     spinner: LoaderCircle,
 } satisfies Record<string, LucideIcon>;
 

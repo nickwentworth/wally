@@ -4,6 +4,7 @@ import {
     binary,
     date,
     decimal,
+    float,
     foreignKey,
     mysqlTable,
     primaryKey,
@@ -45,6 +46,7 @@ export const categories = mysqlTable(
         fgColor: varchar('fg_color', { length: 7 }).notNull(),
         bgColor: varchar('bg_color', { length: 7 }).notNull(),
         icon: varchar('icon', { length: 255 }).notNull(),
+        order: float('order').notNull(),
         userId: bigint('user_id', { mode: 'number', unsigned: true }).notNull(),
     },
     (table) => [
