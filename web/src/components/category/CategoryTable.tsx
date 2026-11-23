@@ -1,12 +1,28 @@
-import { Table, TableHeader, TableRow } from '../common';
+import { Table, TableCell, TableHeader, TableRow } from '../common';
 import { CategoryRow } from './CategoryRow';
 import { useCategories, useCategoryMove } from '../../lib/categories';
 import { DragDropProvider } from '@dnd-kit/react';
 import { isSortable } from '@dnd-kit/react/sortable';
+import { CategoryForm } from './CategoryForm';
+import { useImperativeHandle, useState } from 'react';
 
-export function CategoryTable() {
+export type CategoryTableControls = {
+    openCreateForm: () => void;
+};
+
+type CategoryTableProps = {
+    ref: React.Ref<CategoryTableControls>;
+};
+
+export function CategoryTable(props: CategoryTableProps) {
     const { data: categories } = useCategories();
     const categoryMove = useCategoryMove();
+
+    const [openForm, setOpenForm] = useState<'create' | number | null>(null);
+
+    useImperativeHandle(props.ref, () => ({
+        openCreateForm: () => setOpenForm('create'),
+    }));
 
     if (categories === undefined) {
         return <p>Loading...</p>;
@@ -47,12 +63,25 @@ export function CategoryTable() {
                 </thead>
 
                 <tbody>
-                    {/* TODO: add updated Add Category button */}
+                    {openForm === 'create' && (
+                        <TableRow>
+                            <TableCell className='bg-cream-50' colSpan={3}>
+                                <CategoryForm
+                                    onCancel={() => setOpenForm(null)}
+                                    onSubmit={() => setOpenForm(null)}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    )}
+
                     {categories.map((category, idx) => (
                         <CategoryRow
                             key={category.id}
                             category={category}
                             index={idx}
+                            isExpanded={openForm === category.id}
+                            onExpand={() => setOpenForm(category.id)}
+                            onCollapse={() => setOpenForm(null)}
                         />
                     ))}
                 </tbody>

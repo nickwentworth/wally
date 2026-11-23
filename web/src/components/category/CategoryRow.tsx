@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CategoryForm } from './CategoryForm';
 import { CategoryIcon } from './CategoryIcon';
 import { Icon, TableCell, TableRow } from '../common';
@@ -8,6 +7,9 @@ import { useSortable } from '@dnd-kit/react/sortable';
 type CategoryRowProps = {
     category: Category;
     index: number;
+    isExpanded: boolean;
+    onExpand: () => void;
+    onCollapse: () => void;
 };
 
 export function CategoryRow(props: CategoryRowProps) {
@@ -16,16 +18,14 @@ export function CategoryRow(props: CategoryRowProps) {
         index: props.index,
     });
 
-    const [isExpanded, setIsExpanded] = useState(false);
-
-    if (isExpanded) {
+    if (props.isExpanded) {
         return (
             <TableRow>
                 <TableCell className='bg-cream-50' colSpan={3}>
                     <CategoryForm
                         category={props.category}
-                        onCancel={() => setIsExpanded(false)}
-                        onSubmit={() => setIsExpanded(false)}
+                        onCancel={() => props.onCollapse()}
+                        onSubmit={() => props.onCollapse()}
                     />
                 </TableCell>
             </TableRow>
@@ -36,7 +36,7 @@ export function CategoryRow(props: CategoryRowProps) {
         <TableRow
             ref={ref}
             className='hover:bg-cream-100 cursor-pointer group'
-            onClick={() => setIsExpanded(true)}
+            onClick={() => props.onExpand()}
         >
             <TableCell ref={handleRef} className='hover:cursor-grab'>
                 <Icon icon='grip' className='invisible group-hover:visible' />
@@ -48,20 +48,11 @@ export function CategoryRow(props: CategoryRowProps) {
 
             <TableCell>
                 <div className='flex items-center gap-2'>
-                    {/* {props.category ? (
-                        <> */}
                     <CategoryIcon
                         variant='category'
                         category={props.category}
                     />
                     <span className='font-medium'>{props.category.name}</span>
-                    {/* </>
-                    ) : (
-                        <>
-                            <CategoryIcon variant='empty' />
-                            <span className='text-taupe-400'>Add Category</span>
-                        </>
-                    )} */}
                 </div>
             </TableCell>
         </TableRow>
