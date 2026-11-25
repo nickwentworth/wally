@@ -13,6 +13,7 @@ import { Settings } from 'luxon';
 import { parse } from 'cookie';
 import { OpenAPIHandler } from '@orpc/openapi/node';
 import { apiRouter } from './api/router.js';
+import { ResponseHeadersPlugin } from '@orpc/server/plugins';
 
 Settings.defaultZone = 'utc';
 
@@ -36,7 +37,9 @@ const services = {
     category: new CategoryService(db),
 } satisfies Services;
 
-const apiHandler = new OpenAPIHandler(apiRouter);
+const apiHandler = new OpenAPIHandler(apiRouter, {
+    plugins: [new ResponseHeadersPlugin()],
+});
 
 server.use('/api', async (req, res, next) => {
     const cookies = parse(req.headers.cookie ?? '');
@@ -51,7 +54,7 @@ server.use('/api', async (req, res, next) => {
 
     const { matched } = await apiHandler.handle(req, res, {
         prefix: '/api',
-        context: { user, services },
+        context: { user, services, cookies },
     });
 
     if (!matched) {

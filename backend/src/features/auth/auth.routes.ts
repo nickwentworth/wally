@@ -8,8 +8,6 @@ import { SessionService } from './session.service.js';
 export function buildAuthRouter(services: Services) {
     const authRouter = Router();
 
-    authRouter.get('/logout', (req, res) => res.send('Unimplemented'));
-
     const googleClientId = process.env.GOOGLE_CLIENT_ID;
     const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
     if (googleClientId && googleClientSecret) {

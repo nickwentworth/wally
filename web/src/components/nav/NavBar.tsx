@@ -1,9 +1,11 @@
 import { Icon } from '../common';
 import { NavBarLink } from './NavBarLink';
 import { useAuthedUser } from '../../ProtectedLayout';
+import { useUserLogout } from '../../lib/user';
 
 export function NavBar() {
     const user = useAuthedUser();
+    const userLogout = useUserLogout();
 
     return (
         <nav className='bg-cream-100 border-cream-200 border-r w-55 flex flex-col gap-3 p-3'>
@@ -31,6 +33,8 @@ export function NavBar() {
             <button
                 className='hover:bg-cream-200 flex items-center gap-2 p-2 text-left rounded-lg'
                 type='button'
+                // TODO: should open popover, currently clicking just directly logs out
+                onClick={() => userLogout.mutate()}
             >
                 <span className='bg-moss-200 rounded-full w-8 h-8 flex items-center justify-center shrink-0'>
                     <strong className='text-sm'>N</strong>

@@ -4,6 +4,7 @@ import { User } from '../features/auth/user.schema.js';
 import { SessionService } from '../features/auth/session.service.js';
 import { TransactionService } from '../features/transaction/transaction.service.js';
 import { CategoryService } from '../features/category/category.service.js';
+import { ResponseHeadersPluginContext } from '@orpc/server/plugins';
 
 export type Services = {
     user: UserService;
@@ -12,10 +13,12 @@ export type Services = {
     category: CategoryService;
 };
 
-type ApiBaseContext = {
+type ApiBaseContext = ResponseHeadersPluginContext & {
     services: Services;
     user: User | null;
+    cookies: Record<string, string>;
 };
+
 export const apiBase = os.$context<ApiBaseContext>();
 
 export type ApiRouter = Router<any, ApiBaseContext>;

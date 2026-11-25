@@ -1,5 +1,5 @@
 import { MySql2Database } from 'drizzle-orm/mysql2';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 import { sessions } from '../../db/schema.js';
 
@@ -23,6 +23,15 @@ export class SessionService {
         });
 
         return token;
+    }
+
+    async deleteSession(token: string) {
+        await this.db.delete(sessions).where(
+            and(
+                eq(sessions.secret, sql`UNHEX(SHA1(${token}))`),
+                // eq(sessions.userId, userId),
+            ),
+        );
     }
 
     // TODO: type this function's return
