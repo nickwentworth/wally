@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useCategories } from '../../lib/categories';
-import { useDropdown } from '../../lib/hooks/useDropdown';
 import { buildClass } from '../../lib/utils';
-import { Icon } from '../common';
+import { Icon, Popover } from '../common';
 import { Input } from './Input';
 import { CategoryIcon } from '../category/CategoryIcon';
 
@@ -17,9 +16,6 @@ export function TxnSearchBar(props: TxnSearchBarProps) {
     const [catSearch, setCatSearch] = useState('');
 
     const { data: categories } = useCategories();
-    const dropdown = useDropdown({
-        onClose: () => setCatSearch(''),
-    });
 
     const selectedCategories =
         categories?.filter((cat) => props.categoryIds.includes(cat.id)) ?? [];
@@ -41,48 +37,50 @@ export function TxnSearchBar(props: TxnSearchBarProps) {
 
     return (
         <div className='w-full h-10 bg-white border-cream-200 border rounded-lg flex'>
-            <div className='relative flex' ref={dropdown.containerRef}>
-                <button
-                    className='flex items-center pl-3 pr-2 gap-2 border-cream-200 border-r'
-                    onClick={() => dropdown.open()}
-                    type='button'
-                >
-                    <Icon icon='grid' />
+            <Popover
+                trigger={(args) => (
+                    <button
+                        className='flex items-center pl-3 pr-2 gap-2 border-cream-200 border-r'
+                        style={{ anchorName: args.anchorName }}
+                        type='button'
+                        popoverTarget={args.popoverId}
+                    >
+                        <Icon icon='grid' />
 
-                    {selectedCategories.length === 0 && <span>All</span>}
-                    {selectedCategories.length === 1 && (
-                        <span>{selectedCategories[0].name}</span>
-                    )}
-                    {selectedCategories.length > 1 && (
-                        <span>{selectedCategories.length} categories</span>
-                    )}
-
-                    {selectedCategories.length > 0 && (
-                        <button
-                            className='bg-cream-200 hover:bg-cream-300 p-0.75 rounded-full'
-                            type='button'
-                            onClick={() => props.onCategoryIdsChange([])}
-                        >
-                            <Icon icon='close' size={10} />
-                        </button>
-                    )}
-
-                    <Icon
-                        icon='chevron'
-                        className={buildClass(
-                            'ml-auto transition duration-200',
-                            [dropdown.isOpen, 'rotate-180'],
+                        {selectedCategories.length === 0 && <span>All</span>}
+                        {selectedCategories.length === 1 && (
+                            <span>{selectedCategories[0].name}</span>
                         )}
-                    />
-                </button>
+                        {selectedCategories.length > 1 && (
+                            <span>{selectedCategories.length} categories</span>
+                        )}
 
-                {dropdown.isOpen && (
+                        {selectedCategories.length > 0 && (
+                            <button
+                                className='bg-cream-200 hover:bg-cream-300 p-0.75 rounded-full'
+                                type='button'
+                                onClick={() => props.onCategoryIdsChange([])}
+                            >
+                                <Icon icon='close' size={10} />
+                            </button>
+                        )}
+
+                        <Icon
+                            icon='chevron'
+                            className={buildClass(
+                                'ml-auto transition duration-200',
+                                [args.isOpen, 'rotate-180'],
+                            )}
+                        />
+                    </button>
+                )}
+                content={() => (
                     <div
-                        className={
-                            'absolute top-full left-0 w-60 mt-1 ' +
-                            'bg-white border-cream-200 border shadow rounded-lg ' +
-                            'flex flex-col'
-                        }
+                        className={buildClass(
+                            'w-60',
+                            'bg-white border-cream-200 hover:border-cream-400 border',
+                            'flex flex-col shadow rounded-lg',
+                        )}
                     >
                         <div className='p-2 border-cream-200 border-b'>
                             <Input
@@ -167,7 +165,10 @@ export function TxnSearchBar(props: TxnSearchBarProps) {
                         </div>
                     </div>
                 )}
-            </div>
+                placement='below'
+                gap='sm'
+                onClose={() => setCatSearch('')}
+            />
 
             <div className='grow flex items-center gap-2 px-3'>
                 <Icon icon='search' className='text-taupe-400' />

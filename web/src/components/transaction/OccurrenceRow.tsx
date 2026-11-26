@@ -47,7 +47,6 @@ export function OccurrenceRow(props: OccurrenceRowProps) {
                 />
             </TableCell>
 
-            {/* FIXME: category dropdown on final table rows is cutoff due to overflow-hidden */}
             <TableCell>
                 <Editable
                     value={props.occurrence.categoryId}

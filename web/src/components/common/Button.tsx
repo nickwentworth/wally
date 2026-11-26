@@ -18,7 +18,7 @@ export function Button(props: ButtonProps) {
         ],
         [
             props.variant === 'ghost',
-            'bg-transparent hover:bg-cream-200 text-taupe-900',
+            'bg-transparent hover:bg-cream-50 text-taupe-900',
         ],
         'font-medium text-[13px] rounded-lg',
         'flex items-center justify-center gap-2 px-4 py-2',

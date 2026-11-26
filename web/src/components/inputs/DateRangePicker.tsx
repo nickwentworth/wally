@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Button, Icon, Text } from '../common';
+import { Button, Icon, Popover, Text } from '../common';
 import { buildClass } from '../../lib/utils';
 import { Input } from './Input';
-import { useDropdown } from '../../lib/hooks/useDropdown';
 import {
     DATE_RANGE_PRESETS,
     DateRange,
@@ -23,8 +22,6 @@ type DateRangePickerProps = {
 };
 
 export function DateRangePicker(props: DateRangePickerProps) {
-    const dropdown = useDropdown();
-
     const [from, setFrom] = useState(
         typeof props.value === 'object' ? props.value.from : '',
     );
@@ -34,13 +31,6 @@ export function DateRangePicker(props: DateRangePickerProps) {
 
     const isFromToValid = from && to && new Date(from) <= new Date(to);
 
-    const onApplyBtnClick = () => {
-        if (isFromToValid) {
-            props.onChange({ from, to });
-            dropdown.close();
-        }
-    };
-
     let mainLabel;
     if (typeof props.value === 'string') {
         mainLabel = PRESETS_TO_NAMES[props.value];
@@ -49,42 +39,47 @@ export function DateRangePicker(props: DateRangePickerProps) {
     }
 
     return (
-        <div className='relative' ref={dropdown.containerRef}>
-            <button
-                className='w-40 h-10 bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
-                onClick={() => dropdown.open()}
-                type='button'
-            >
-                <Icon icon='briefcase' />
+        <Popover
+            trigger={(args) => (
+                <button
+                    className={buildClass(
+                        'w-40 h-10 shrink-0 bg-white border-cream-200 border',
+                        'flex items-center gap-2 p-2 rounded-lg',
+                    )}
+                    type='button'
+                    popoverTarget={args.popoverId}
+                    style={{ anchorName: args.anchorName }}
+                >
+                    <Icon icon='calendar' className='shrink-0' />
 
-                {mainLabel}
+                    {mainLabel}
 
-                <Icon
-                    icon='chevron'
-                    className={buildClass('ml-auto transition duration-200', [
-                        dropdown.isOpen,
-                        'rotate-180',
-                    ])}
-                />
-            </button>
-
-            {dropdown.isOpen && (
+                    <Icon
+                        icon='chevron'
+                        className={buildClass(
+                            'shrink-0 ml-auto transition duration-200',
+                            [args.isOpen, 'rotate-180'],
+                        )}
+                    />
+                </button>
+            )}
+            content={(args) => (
                 <div
-                    className={
-                        'absolute top-full left-0 w-100 mt-1 ' +
-                        'bg-white border-cream-200 border shadow rounded-lg ' +
-                        'flex flex-col p-1'
-                    }
+                    className={buildClass(
+                        'w-100',
+                        'bg-white border-cream-200 hover:border-cream-400 border',
+                        'flex flex-col p-1 shadow rounded-lg',
+                    )}
                 >
                     {DATE_RANGE_PRESETS.map((preset) => (
                         <button
+                            key={preset}
                             className='hover:bg-cream-100 rounded flex items-center gap-2 px-3 py-2'
                             onClick={() => {
                                 props.onChange(preset);
-                                dropdown.close();
+                                args.close();
                             }}
                             type='button'
-                            key={preset}
                         >
                             {PRESETS_TO_NAMES[preset]}
                             {props.value === preset && (
@@ -112,13 +107,20 @@ export function DateRangePicker(props: DateRangePickerProps) {
                             // TODO: just temporary, eventually add a disabled state
                             variant={isFromToValid ? 'primary' : 'ghost'}
                             className='col-span-2'
-                            onClick={onApplyBtnClick}
+                            onClick={() => {
+                                if (isFromToValid) {
+                                    props.onChange({ from, to });
+                                    args.close();
+                                }
+                            }}
                         >
                             Apply custom range
                         </Button>
                     </div>
                 </div>
             )}
-        </div>
+            placement='below'
+            gap='sm'
+        />
     );
 }

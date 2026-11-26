@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 import { Category, useCategories } from '../../lib/categories';
 import { CategoryIcon } from '../category/CategoryIcon';
-import { Icon } from '../common';
+import { Icon, Popover } from '../common';
 import { buildClass } from '../../lib/utils';
-import { useDropdown } from '../../lib/hooks/useDropdown';
 
 type CategorySelectProps = {
     selectedId?: number;
@@ -14,11 +13,6 @@ export function CategorySelect(props: CategorySelectProps) {
     const { data: categories } = useCategories();
 
     const [search, setSearch] = useState('');
-
-    const dropdown = useDropdown({
-        onOpen: () => inputRef.current?.focus(),
-        onClose: () => setSearch(''),
-    });
 
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,44 +30,49 @@ export function CategorySelect(props: CategorySelectProps) {
     );
 
     return (
-        <div className='relative' ref={dropdown.containerRef}>
-            <button
-                className='w-full h-10 bg-white border-cream-200 border rounded-lg flex items-center gap-2 p-2'
-                onClick={() => dropdown.open()}
-                onFocus={() => dropdown.open()}
-                type='button'
-            >
-                {search === '' ? (
-                    <CategoryIcon variant='category' category={selected} />
-                ) : (
-                    <Icon icon='search' />
-                )}
+        <Popover
+            trigger={(args) => (
+                <button
+                    className={buildClass(
+                        'w-full h-10 bg-white border-cream-200 border',
+                        'flex items-center gap-2 p-2 rounded-lg',
+                    )}
+                    style={{ anchorName: args.anchorName }}
+                    onClick={() => args.open()}
+                    onFocus={() => args.open()}
+                    type='button'
+                >
+                    {search === '' ? (
+                        <CategoryIcon variant='category' category={selected} />
+                    ) : (
+                        <Icon icon='search' />
+                    )}
 
-                <input
-                    className='placeholder:text-taupe-700 grow min-w-0'
-                    type='text'
-                    placeholder={selected.name}
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    ref={inputRef}
-                />
+                    <input
+                        className='placeholder:text-taupe-700 grow min-w-0 outline-none'
+                        type='text'
+                        placeholder={selected.name}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        ref={inputRef}
+                    />
 
-                <Icon
-                    icon='chevron'
-                    className={buildClass('transition duration-200', [
-                        dropdown.isOpen,
-                        'rotate-180',
-                    ])}
-                />
-            </button>
-
-            {dropdown.isOpen && (
+                    <Icon
+                        icon='chevron'
+                        className={buildClass(
+                            'shrink-0 transition duration-200',
+                            [args.isOpen, 'rotate-180'],
+                        )}
+                    />
+                </button>
+            )}
+            content={(args) => (
                 <div
-                    className={
-                        'absolute top-full left-0 mt-1 max-h-30 overflow-auto w-full ' +
-                        'bg-white border-cream-200 border shadow rounded-lg ' +
-                        'flex flex-col p-1'
-                    }
+                    className={buildClass(
+                        'w-full max-h-50 overflow-auto',
+                        'bg-white border-cream-200 hover:border-cream-400 border',
+                        'flex flex-col p-1 shadow rounded-lg',
+                    )}
                 >
                     {filteredCategories.length === 0 && (
                         <p className='text-xs text-center p-2'>No matches</p>
@@ -81,16 +80,16 @@ export function CategorySelect(props: CategorySelectProps) {
 
                     {filteredCategories.map((category) => (
                         <button
+                            key={category.id}
                             className={buildClass(
                                 'hover:bg-cream-100 rounded flex items-center gap-2 p-1',
                                 [category == selected, 'bg-cream-50'],
                             )}
                             onClick={() => {
                                 props.onSelect(category);
-                                dropdown.close();
+                                args.close();
                             }}
                             type='button'
-                            key={category.id}
                         >
                             <CategoryIcon
                                 variant='category'
@@ -106,6 +105,13 @@ export function CategorySelect(props: CategorySelectProps) {
                     ))}
                 </div>
             )}
-        </div>
+            onOpen={() => inputRef.current?.focus()}
+            onClose={() => {
+                inputRef.current?.blur();
+                setSearch('');
+            }}
+            placement='below'
+            gap='sm'
+        />
     );
 }

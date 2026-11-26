@@ -22,6 +22,8 @@ import {
     ChevronRight,
     LoaderCircle,
     GripVertical,
+    LogOut,
+    Calendar,
 } from 'lucide-react';
 import { CategoryIconName } from '../../lib/categories';
 
@@ -47,6 +49,8 @@ const ICONS = {
     chevronRight: ChevronRight,
     search: Search,
     settings: Settings,
+    calendar: Calendar,
+    logout: LogOut,
     receipt: Receipt,
     tag: Tag,
     grip: GripVertical,
