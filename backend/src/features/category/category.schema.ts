@@ -5,26 +5,16 @@ import z from 'zod';
 const Id = z.int();
 const Name = z.string();
 const Color = z.string();
-
-// TODO: Maybe have frontend be the source of category icons
-export const CategoryIcon = z.enum([
-    'shoppping',
-    'gift',
-    'utensils',
-    'car',
-    'house',
-    'briefcase',
-]);
-export type CategoryIcon = z.infer<typeof CategoryIcon>;
+const CategoryIcon = z.string();
 
 /* ———————————————————— Category ———————————————————— */
 
 export const CategoryJson = z.object({
     id: Id,
-    name: z.string(),
+    name: Name,
     icon: CategoryIcon,
-    fgColor: z.string(),
-    bgColor: z.string(),
+    fgColor: Color,
+    bgColor: Color,
 });
 export type CategoryJson = z.infer<typeof CategoryJson>;
 
@@ -55,6 +45,6 @@ export const CategoryMove = z.object({
 export type CategoryMove = z.infer<typeof CategoryMove>;
 
 export const CategoryDelete = z.object({
-    id: z.int(),
+    id: Id,
 });
 export type CategoryDelete = z.infer<typeof CategoryDelete>;

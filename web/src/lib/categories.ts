@@ -1,6 +1,7 @@
 import { CategoryFormColor } from '../components/category/CategoryForm';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient, ApiInput, ApiOutput, unwrap } from './api';
+import { IconType } from '../components/common';
 
 // -------------------- Hooks -------------------- //
 
@@ -8,7 +9,10 @@ const categoryKey = ['category'];
 
 export function useCategories() {
     return useQuery({
-        queryFn: () => unwrap(apiClient.GET('/category/all')),
+        queryFn: async () => {
+            const categories = await unwrap(apiClient.GET('/category/all'));
+            return categories.map(categoryFromApi);
+        },
         queryKey: categoryKey,
     });
 }
@@ -82,8 +86,11 @@ export function useCategoryDelete(opts: UseCategoryDeleteOpts) {
 
 // -------------------- Types / Constants -------------------- //
 
-export type Category = ApiOutput<'/category/all', 'get'>[number];
-export type CategoryIconName = Category['icon'];
+type CategoryApi = ApiOutput<'/category/all', 'get'>[number];
+
+export type Category = Omit<CategoryApi, 'icon'> & {
+    icon: CategoryIconName;
+};
 
 export const CATEGORY_COLORS = [
     { bg: '#FBD4D9', fg: '#8A1F31' },
@@ -103,18 +110,30 @@ export const CATEGORY_COLORS = [
     { bg: '#DDD7C8', fg: '#4F4628' },
 ] satisfies CategoryFormColor[];
 
-export const CATEGORY_ICONS = [
-    'shoppping',
-    'gift',
-    'utensils',
-    'car',
-    'house',
-    'briefcase',
-] as const;
-
 export function tryGetCategoryColor(category?: Category) {
     return CATEGORY_COLORS.find(
         (color) =>
             color.bg === category?.bgColor && color.fg === category?.fgColor,
     );
+}
+
+export const CATEGORY_ICONS = [
+    'briefcase',
+    'car',
+    'gift',
+    'house',
+    'shopping',
+    'utensils',
+    'dollar',
+] satisfies IconType[];
+
+export type CategoryIconName = (typeof CATEGORY_ICONS)[number];
+
+function categoryFromApi(category: CategoryApi): Category {
+    return {
+        ...category,
+        icon: CATEGORY_ICONS.some((icon) => icon === category.icon)
+            ? (category.icon as CategoryIconName)
+            : 'dollar', // fallback
+    };
 }

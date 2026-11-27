@@ -3,11 +3,9 @@ import { categories } from '../../db/schema.js';
 import { and, eq } from 'drizzle-orm';
 import {
     CategoryCreate,
-    CategoryIcon,
     CategoryMove,
     CategoryUpdate,
 } from './category.schema.js';
-import { OmitStrict } from '../../util/types.js';
 
 /** How far to offset next order value when appending/prepending ordered categories */
 const ORDERING_OFFSET = 1;
@@ -27,7 +25,7 @@ export class CategoryService {
             .select()
             .from(categories)
             .where(and(eq(categories.id, id), eq(categories.userId, userId)))
-            .then((rs) => (rs.length > 0 ? categoryFromDb(rs[0]) : null));
+            .then((rs) => (rs.length > 0 ? rs[0] : null));
     }
 
     async getAll(userId: number): Promise<Category[]> {
@@ -35,8 +33,7 @@ export class CategoryService {
             .select()
             .from(categories)
             .where(eq(categories.userId, userId))
-            .orderBy(categories.order, categories.id)
-            .then((rs) => rs.map(categoryFromDb));
+            .orderBy(categories.order, categories.id);
     }
 
     async create(create: CategoryCreate, userId: number): Promise<void> {
@@ -121,14 +118,4 @@ export class CategoryService {
 }
 
 type CategoryDb = typeof categories.$inferSelect;
-
-type Category = OmitStrict<CategoryDb, 'icon'> & {
-    icon: CategoryIcon;
-};
-
-function categoryFromDb(category: CategoryDb): Category {
-    return {
-        ...category,
-        icon: CategoryIcon.parse(category.icon),
-    };
-}
+type Category = CategoryDb;

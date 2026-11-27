@@ -1,60 +1,38 @@
-import {
-    LucideIcon,
-    LucideProps,
-    Plus,
-    Settings,
-    Receipt,
-    Tag,
-    X,
-    Check,
-    Briefcase,
-    Car,
-    Gift,
-    House,
-    ShoppingCart,
-    Utensils,
-    Trash2,
-    ChevronDown,
-    Search,
-    Repeat,
-    List,
-    LayoutGrid,
-    ChevronRight,
-    LoaderCircle,
-    GripVertical,
-    LogOut,
-    Calendar,
-} from 'lucide-react';
-import { CategoryIconName } from '../../lib/categories';
-
-const CATEGORY_ICONS = {
-    briefcase: Briefcase,
-    car: Car,
-    gift: Gift,
-    house: House,
-    shoppping: ShoppingCart,
-    utensils: Utensils,
-} satisfies Record<CategoryIconName, LucideIcon>;
+import type { LucideIcon, LucideProps } from 'lucide-react';
+import * as L from 'lucide-react';
 
 const ICONS = {
-    ...CATEGORY_ICONS,
-    plus: Plus,
-    close: X,
-    trash: Trash2,
-    check: Check,
-    repeat: Repeat,
-    list: List,
-    grid: LayoutGrid,
-    chevron: ChevronDown, // TODO: rename to chevronDown
-    chevronRight: ChevronRight,
-    search: Search,
-    settings: Settings,
-    calendar: Calendar,
-    logout: LogOut,
-    receipt: Receipt,
-    tag: Tag,
-    grip: GripVertical,
-    spinner: LoaderCircle,
+    // Generic
+    check: L.Check,
+    close: L.X,
+    plus: L.Plus,
+    search: L.Search,
+    trash: L.Trash2,
+
+    // Helpers
+    chevron: L.ChevronDown, // TODO: rename to chevronDown
+    chevronRight: L.ChevronRight,
+    grip: L.GripVertical,
+    spinner: L.LoaderCircle,
+
+    // UI specific
+    calendar: L.Calendar,
+    grid: L.LayoutGrid,
+    list: L.List,
+    logout: L.LogOut,
+    receipt: L.Receipt,
+    repeat: L.Repeat,
+    settings: L.Settings,
+    tag: L.Tag,
+
+    // Category specific
+    briefcase: L.Briefcase,
+    car: L.Car,
+    gift: L.Gift,
+    house: L.House,
+    shopping: L.ShoppingCart,
+    utensils: L.Utensils,
+    dollar: L.DollarSign,
 } satisfies Record<string, LucideIcon>;
 
 export type IconType = keyof typeof ICONS;
